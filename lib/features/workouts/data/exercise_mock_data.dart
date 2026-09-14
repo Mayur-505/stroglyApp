@@ -1,0 +1,242 @@
+import '../models/exercise_detail_models.dart';
+
+class ExerciseMockData {
+  static List<ExerciseDetailItem> getDayExercises(int dayNumber) {
+    return const [
+      ExerciseDetailItem(
+        id: 'jumping_jacks',
+        title: 'Jumping Jacks',
+        targetArea: 'Full body',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Stand straight with your feet together and arms by your sides.',
+          'Jump while spreading your feet apart and raising both arms overhead.',
+          'Jump back to the starting position and repeat at a steady pace.',
+        ],
+        keyTips: [
+          'Keep your chest up and maintain good posture.',
+          'Land softly on the balls of your feet.',
+          'Keep your core engaged throughout the movement.',
+          'Breathe naturally and avoid holding your breath.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'squats',
+        title: 'Squats',
+        targetArea: 'Legs & Glutes',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Stand with feet slightly wider than shoulder-width apart.',
+          'Push your hips back and bend your knees as if sitting down.',
+          'Lower down until your thighs are parallel to the floor.',
+          'Drive through your heels to return to standing position.',
+        ],
+        keyTips: [
+          'Keep your chest elevated and spine neutral.',
+          'Ensure your knees track in line with your toes.',
+          'Squeeze your glutes at the top of each rep.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'wall_pushups',
+        title: 'Wall Push-Ups',
+        targetArea: 'Chest & Arms',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Stand an arm’s length away from a wall with feet shoulder-width apart.',
+          'Place your palms flat against the wall at chest height.',
+          'Bend elbows to lower your chest toward the wall with controlled pace.',
+          'Push through palms to return to starting position.',
+        ],
+        keyTips: [
+          'Keep your body in a straight line from head to heels.',
+          'Engage your abdominal muscles to avoid arching your back.',
+          'Breathe in as you lower, breathe out as you press back.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'backward_lunge',
+        title: 'Backward Lunge',
+        targetArea: 'Legs & Balance',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Stand tall with hands on hips and feet hip-width apart.',
+          'Take a large step backward with one leg and lower hips.',
+          'Bend both knees until they form approximately 90-degree angles.',
+          'Push through front heel to step back forward and alternate legs.',
+        ],
+        keyTips: [
+          'Keep your front knee directly above your front ankle.',
+          'Maintain an upright torso without leaning forward.',
+          'Lower your back knee gently until it almost touches the floor.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'elbows_back',
+        title: 'Elbows Back',
+        targetArea: 'Upper Back & Posture',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Stand straight with feet hip-width apart and arms bent at chest height.',
+          'Draw elbows backwards squeezing shoulder blades together firmly.',
+          'Hold the peak squeeze for one second.',
+          'Release slowly forward and repeat smoothly.',
+        ],
+        keyTips: [
+          'Focus on retracting your scapula and opening up the chest.',
+          'Keep shoulders relaxed and away from your ears.',
+          'Breathe deeply with each chest expansion.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: '90_90_crunch',
+        title: '90/90 Crunch',
+        targetArea: 'Core & Abs',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Lie flat on back with hips and knees both bent at 90 degrees.',
+          'Place fingertips gently behind ears without pulling your head.',
+          'Contract abs to lift shoulder blades smoothly off the ground.',
+          'Pause momentarily at top and lower back down with control.',
+        ],
+        keyTips: [
+          'Keep knees stacked directly above hips at 90 degrees.',
+          'Avoid yanking on your neck; let your abs do the lifting.',
+          'Exhale forcefully as you crunch upward.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'mountain_climbers',
+        title: 'Mountain Climbers',
+        targetArea: 'Full body & Core',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Start in a push-up plank position with hands under shoulders.',
+          'Drive one knee toward your chest without touching floor with foot.',
+          'Quickly alternate legs in a smooth running motion.',
+          'Keep hips steady and level throughout.',
+        ],
+        keyTips: [
+          'Maintain firm hand pressure into the ground.',
+          'Keep your shoulders right over your wrists.',
+          'Avoid bouncing your hips up and down.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'plank',
+        title: 'Forearm Plank',
+        targetArea: 'Core & Stability',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Rest on your forearms with elbows directly beneath your shoulders.',
+          'Extend your legs straight back with feet hip-width apart.',
+          'Form a straight diagonal line from head to heels.',
+          'Hold this isometric contraction while maintaining steady breaths.',
+        ],
+        keyTips: [
+          'Tuck your pelvis and squeeze your glutes tightly.',
+          'Do not let your lower back arch or sag toward the floor.',
+          'Gaze slightly ahead on the floor to keep neck neutral.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'bicycle_crunches',
+        title: 'Bicycle Crunches',
+        targetArea: 'Abs & Obliques',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Lie flat on your back with hands behind your head and knees bent.',
+          'Lift shoulder blades off the floor and bring knees to 90 degrees.',
+          'Rotate your torso to bring opposite elbow to opposite knee.',
+          'Alternate smoothly from side to side in a pedaling movement.',
+        ],
+        keyTips: [
+          'Do not pull on your neck; lead with your shoulder.',
+          'Focus on full rotational contraction of the obliques.',
+          'Perform slow, controlled reps rather than rushing.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'glute_bridges',
+        title: 'Glute Bridges',
+        targetArea: 'Glutes & Hamstrings',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Lie on your back with knees bent and feet flat on the floor.',
+          'Place arms at your sides with palms facing down.',
+          'Drive through your heels to lift hips up toward the ceiling.',
+          'Hold and squeeze your glutes at the top for 1-2 seconds, then lower.',
+        ],
+        keyTips: [
+          'Form a straight line from knees to hips to shoulders at top.',
+          'Do not overextend your lower back.',
+          'Keep your weight primarily on your heels.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'tricep_dips',
+        title: 'Chair / Bench Dips',
+        targetArea: 'Triceps & Shoulders',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Sit on the edge of a sturdy chair or bench with hands next to hips.',
+          'Slide your glutes forward off the edge with knees bent or legs extended.',
+          'Lower your body by bending elbows back to roughly 90 degrees.',
+          'Press through palms to push back up to starting position.',
+        ],
+        keyTips: [
+          'Keep your back close to the chair/bench throughout.',
+          'Point elbows straight back, not flaring out sideways.',
+          'Lower in a slow, controlled manner.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'high_knees',
+        title: 'High Knees',
+        targetArea: 'Cardio & Legs',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Stand tall with feet hip-width apart.',
+          'Drive your right knee up toward your chest as high as possible.',
+          'Quickly switch and bring your left knee up while pumping your arms.',
+          'Keep a fast, rhythmic cadence on the balls of your feet.',
+        ],
+        keyTips: [
+          'Stay light on your feet and maintain an upright torso.',
+          'Focus on driving the knees past your hip level.',
+          'Pump your opposite arms in rhythm with knees.',
+        ],
+      ),
+      ExerciseDetailItem(
+        id: 'cobra_stretch',
+        title: 'Cobra Stretch',
+        targetArea: 'Abdominals & Spine',
+        duration: '00:30',
+        imagePath: 'assets/images/jumping_jacks.jpg',
+        instructions: [
+          'Lie face down on the mat with palms flat on floor under shoulders.',
+          'Keep legs straight and tops of feet flat on the mat.',
+          'Gently press through palms to lift your chest and torso upward.',
+          'Hold the stretch while breathing deeply into your belly.',
+        ],
+        keyTips: [
+          'Keep your shoulders down away from your ears.',
+          'Do not force the stretch into lower back pain.',
+          'Relax your glutes and feel the gentle stretch across your abs.',
+        ],
+      ),
+    ];
+  }
+}

@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/workout_detail_mock_data.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/widgets/app_image.dart';
+import '../../../core/services/language_service.dart';
 import '../models/workout_detail_models.dart';
 import '../widgets/workout_day_card.dart';
 import 'day_workout_exercises_screen.dart';
 
 class WorkoutStartScheduleScreen extends StatefulWidget {
+  final String? planId;
   final String workoutTitle;
   final String heroImage;
   final String difficultyLevel;
 
   const WorkoutStartScheduleScreen({
     super.key,
+    this.planId,
     this.workoutTitle = 'Full Body Burn',
     this.heroImage = 'assets/images/image 7 (1).png',
     this.difficultyLevel = 'No experience',
@@ -27,13 +31,14 @@ class _WorkoutStartScheduleScreenState
     extends State<WorkoutStartScheduleScreen> {
   late String _selectedLevel;
   late List<WorkoutDayItem> _days;
+  WorkoutDetailData? _detailData;
 
   @override
   void initState() {
     super.initState();
     _selectedLevel = widget.difficultyLevel;
 
-    // Generate 30 days: Day 1 starts unlocked, Days 2-30 locked
+    // Generate initial 30 days while loading
     _days = List.generate(30, (index) {
       final dayNum = index + 1;
       return WorkoutDayItem(
@@ -44,6 +49,40 @@ class _WorkoutStartScheduleScreenState
         isCompleted: false,
       );
     });
+
+    _fetchPlan();
+    LanguageService.instance.addListener(_onLanguageChanged);
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) {
+      _fetchPlan();
+    }
+  }
+
+  Future<void> _fetchPlan() async {
+    try {
+      final plan = widget.planId ?? 'full_body_burn';
+      final res = await ApiClient.instance.get('/plans/$plan');
+      if (res.isOk && res.data != null) {
+        if (mounted) {
+          setState(() {
+            _detailData = WorkoutDetailData.fromJson(
+              Map<String, dynamic>.from(res['data'] as Map),
+            );
+            if (_detailData!.days.isNotEmpty) {
+              _days = _detailData!.days;
+            }
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   int get _completedDaysCount =>
@@ -77,6 +116,7 @@ class _WorkoutStartScheduleScreenState
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DayWorkoutExercisesScreen(
+          planId: widget.planId,
           dayNumber: day.dayNumber,
           workoutTitle: widget.workoutTitle,
           heroImage: widget.heroImage,
@@ -253,10 +293,17 @@ class _WorkoutStartScheduleScreenState
   }
 
   void _showPlanInfoSheet() {
-    final detail = WorkoutDetailMockData.getFullBodyBurnDetail(
-      customTitle: widget.workoutTitle,
-      customImage: widget.heroImage,
-    );
+    final detail = _detailData ??
+        WorkoutDetailData(
+          id: widget.planId ?? 'full_body_burn',
+          title: widget.workoutTitle,
+          heroImage: widget.heroImage,
+          descriptionParagraph1:
+              'Get ready to move, sweat, and feel stronger with a complete workout designed to activate your entire body in just 20 minutes.',
+          descriptionParagraph2:
+              'No matter where you are starting from, all you need is 20 minutes and the determination to show up.',
+          days: _days,
+        );
 
     showModalBottomSheet(
       context: context,
@@ -291,11 +338,10 @@ class _WorkoutStartScheduleScreenState
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.asset(
-                              widget.heroImage,
+                            AppImage(
+                              imagePath: widget.heroImage,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(color: const Color(0xFF161619)),
+                              errorWidget: Container(color: const Color(0xFF161619)),
                             ),
                             Container(
                               decoration: BoxDecoration(
@@ -587,12 +633,10 @@ class _WorkoutStartScheduleScreenState
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
-                widget.heroImage,
+              AppImage(
+                imagePath: widget.heroImage,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: const Color(0xFF161619),
-                ),
+                errorWidget: Container(color: const Color(0xFF161619)),
               ),
               Container(
                 decoration: BoxDecoration(

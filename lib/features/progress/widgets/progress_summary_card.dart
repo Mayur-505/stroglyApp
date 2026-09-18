@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/progress_mock_data.dart';
 import '../models/progress_models.dart';
 
 class ProgressSummaryCard extends StatelessWidget {
@@ -13,16 +12,16 @@ class ProgressSummaryCard extends StatelessWidget {
 
   const ProgressSummaryCard({
     super.key,
-    this.dateRange = 'Aug 30 - Sep 5',
-    this.year = '2026',
-    this.averageValue = '1',
+    this.dateRange = '',
+    this.year = '',
+    this.averageValue = '0',
     this.averageUnit = 'Average (min)',
     this.days,
   });
 
   @override
   Widget build(BuildContext context) {
-    final chartDays = days ?? ProgressMockData.workoutChart.days;
+    final chartDays = days ?? const [];
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18.0),

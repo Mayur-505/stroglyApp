@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/constants/app_colors.dart';
 import 'core/services/language_service.dart';
+import 'core/network/auth_session_manager.dart';
 import 'features/splash/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await LanguageService.instance.init();
+  await AuthSessionManager.instance.init();
   runApp(const StronglyApp());
 }
 
@@ -20,7 +22,6 @@ class StronglyApp extends StatelessWidget {
       valueListenable: LanguageService.instance.currentLanguageNotifier,
       builder: (context, currentLanguage, _) {
         return MaterialApp(
-          key: ValueKey(currentLanguage),
           title: 'Strongly',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(

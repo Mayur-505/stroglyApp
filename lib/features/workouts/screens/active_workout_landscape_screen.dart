@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/exercise_mock_data.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 
 enum ActiveWorkoutStep {
@@ -18,6 +18,7 @@ class ActiveWorkoutLandscapeScreen extends StatefulWidget {
   final int dayNumber;
   final String workoutTitle;
   final int initialExerciseIndex;
+  final List<ExerciseDetailItem>? exercises;
   final VoidCallback? onComplete;
 
   const ActiveWorkoutLandscapeScreen({
@@ -25,6 +26,7 @@ class ActiveWorkoutLandscapeScreen extends StatefulWidget {
     this.dayNumber = 1,
     this.workoutTitle = 'Full Body Burn',
     this.initialExerciseIndex = 0,
+    this.exercises,
     this.onComplete,
   });
 
@@ -66,14 +68,19 @@ class _ActiveWorkoutLandscapeScreenState
       DeviceOrientation.landscapeRight,
     ]);
 
-    _exercises = ExerciseMockData.getDayExercises(widget.dayNumber);
+    if (widget.exercises != null && widget.exercises!.isNotEmpty) {
+      _exercises = List<ExerciseDetailItem>.from(widget.exercises!);
+    } else {
+      _exercises = [];
+    }
     _currentIndex = (widget.initialExerciseIndex >= 0 &&
             widget.initialExerciseIndex < _exercises.length)
         ? widget.initialExerciseIndex
         : 0;
 
-    _exerciseSecondsRemaining =
-        _parseDuration(_exercises[_currentIndex].duration);
+    _exerciseSecondsRemaining = _exercises.isNotEmpty
+        ? _parseDuration(_exercises[_currentIndex].duration)
+        : 30;
 
     // Setup micro-bounce animation for active exercise character
     _animController = AnimationController(
@@ -293,10 +300,10 @@ class _ActiveWorkoutLandscapeScreenState
               scale: _bounceAnimation,
               child: SizedBox(
                 height: MediaQuery.of(context).size.height * 0.65,
-                child: Image.asset(
-                  currentExercise.imagePath,
+                child: AppImage(
+                  imagePath: currentExercise.imagePath,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) =>
+                  errorWidget:
                       const Icon(Icons.fitness_center_rounded, size: 80),
                 ),
               ),
@@ -748,11 +755,14 @@ class _ActiveWorkoutLandscapeScreenState
                       Center(
                         child: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.58,
-                          child: Image.asset(
-                            'assets/images/squats_illustration.jpg',
+                          child: AppImage(
+                            imagePath: nextExercise.imagePath,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Image.asset(nextExercise.imagePath),
+                            errorWidget: const Icon(
+                              Icons.fitness_center_rounded,
+                              size: 64,
+                              color: Color(0xFF141416),
+                            ),
                           ),
                         ),
                       ),

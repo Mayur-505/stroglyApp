@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/language_service.dart';
-import '../data/profile_mock_data.dart';
 import '../models/profile_models.dart';
 
 class ProfileSettingsCard extends StatelessWidget {
@@ -11,7 +10,7 @@ class ProfileSettingsCard extends StatelessWidget {
 
   const ProfileSettingsCard({
     super.key,
-    this.items = ProfileMockData.settings,
+    this.items = defaultProfileSettings,
     this.onItemTap,
   });
 
@@ -41,6 +40,8 @@ class ProfileSettingsCard extends StatelessWidget {
   }
 
   Widget _buildSettingRow(ProfileSettingItem item) {
+    final isDanger = item.id == 'delete_account';
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -54,18 +55,18 @@ class ProfileSettingsCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(
           children: [
-            // Olive rounded square with Lime icon
+            // Rounded square icon container
             Container(
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: const Color(0xFF233010),
+                color: isDanger ? const Color(0xFF2C1414) : const Color(0xFF233010),
                 borderRadius: BorderRadius.circular(12.0),
               ),
               child: Center(
                 child: Icon(
                   item.icon,
-                  color: AppColors.primaryLime,
+                  color: isDanger ? const Color(0xFFFF5B5B) : AppColors.primaryLime,
                   size: 20,
                 ),
               ),
@@ -75,19 +76,21 @@ class ProfileSettingsCard extends StatelessWidget {
             // Title
             Expanded(
               child: Text(
-                LanguageService.tr(item.id),
+                LanguageService.tr(item.id) != item.id
+                    ? LanguageService.tr(item.id)
+                    : item.title,
                 style: GoogleFonts.outfit(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: isDanger ? const Color(0xFFFF6B6B) : Colors.white,
                 ),
               ),
             ),
 
             // Chevron Right
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: Colors.white38,
+              color: isDanger ? const Color(0x66FF6B6B) : Colors.white38,
               size: 20,
             ),
           ],

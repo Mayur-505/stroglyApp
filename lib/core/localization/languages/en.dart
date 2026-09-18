@@ -127,4 +127,10 @@ const Map<String, String> enTranslations = {
   'rate_us': 'Rate Us',
   'privacy_policy': 'Privacy Policy',
   'terms_of_service': 'Terms of Service',
+  'delete_account': 'Delete Account',
+
+  // Where to train sheet
+  'where_to_train': 'Where to train',
+  'in_the_gym': 'In the gym',
+  'at_home': 'At home',
 };

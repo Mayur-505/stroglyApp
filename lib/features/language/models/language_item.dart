@@ -22,20 +22,6 @@ class LanguageItem {
       sublabel: 'Default Language',
     ),
     LanguageItem(
-      code: 'hi',
-      name: 'Hindi',
-      nativeName: 'हिन्दी',
-      flag: '🇮🇳',
-      sublabel: 'Hindi Language',
-    ),
-    LanguageItem(
-      code: 'gu',
-      name: 'Gujarati',
-      nativeName: 'ગુજરાતી',
-      flag: '🇮🇳',
-      sublabel: 'Gujarati Language',
-    ),
-    LanguageItem(
       code: 'es',
       name: 'Spanish',
       nativeName: 'Español',
@@ -83,6 +69,20 @@ class LanguageItem {
       nativeName: '日本語',
       flag: '🇯🇵',
       sublabel: 'にほんご',
+    ),
+    LanguageItem(
+      code: 'hi',
+      name: 'Hindi',
+      nativeName: 'हिन्दी',
+      flag: '🇮🇳',
+      sublabel: 'Hindi Language',
+    ),
+    LanguageItem(
+      code: 'gu',
+      name: 'Gujarati',
+      nativeName: 'ગુજરાતી',
+      flag: '🇮🇳',
+      sublabel: 'Gujarati Language',
     ),
   ];
 }

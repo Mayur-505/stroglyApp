@@ -45,20 +45,35 @@ class RecommendedWorkoutCard extends StatelessWidget {
               SizedBox(
                 height: 125,
                 width: double.infinity,
-                child: Image.asset(
-                  workout.imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: const Color(0xFF222818),
-                    child: const Center(
-                      child: Icon(
-                        Icons.fitness_center_rounded,
-                        color: AppColors.primaryLime,
-                        size: 36,
+                child: workout.imagePath.startsWith('http')
+                    ? Image.network(
+                        workout.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFF222818),
+                          child: const Center(
+                            child: Icon(
+                              Icons.fitness_center_rounded,
+                              color: AppColors.primaryLime,
+                              size: 36,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        workout.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFF222818),
+                          child: const Center(
+                            child: Icon(
+                              Icons.fitness_center_rounded,
+                              color: AppColors.primaryLime,
+                              size: 36,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ),
 
               // Details

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/preference_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_constants.dart';
 import '../widgets/questionnaire_layout.dart';
 import '../../home/screens/home_screen.dart';
 
@@ -79,6 +81,25 @@ class _QuestionnaireFlowScreenState extends State<QuestionnaireFlowScreen> {
     // Save state to permanent storage
     await PreferenceService.saveUserProfile(_profile);
     await PreferenceService.setOnboardingCompleted(true);
+
+    // Sync to backend API
+    ApiClient.instance.post(
+      ApiConstants.questionnaire,
+      {
+        'gender': _profile.gender,
+        'height': _profile.height,
+        'heightUnit': _profile.heightUnit,
+        'weight': _profile.weight,
+        'weightUnit': _profile.weightUnit,
+        'age': _profile.age,
+        'activityLevel': _profile.activityLevel,
+        'goals': _profile.goals,
+        'workoutPlace': _profile.workoutPlace,
+        'fitnessLevel': _profile.fitnessLevel,
+        'duration': _profile.duration,
+        'trainingDays': _profile.trainingDays,
+      },
+    ).catchError((_) => ApiResponse(success: false, statusCode: 500));
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(

@@ -127,4 +127,9 @@ const Map<String, String> arTranslations = {
   'rate_us': 'قيّمنا',
   'privacy_policy': 'سياسة الخصوصية',
   'terms_of_service': 'شروط الخدمة',
+
+  // Where to train sheet
+  'where_to_train': 'أين تريد التمرين',
+  'in_the_gym': 'في الجيم',
+  'at_home': 'في المنزل',
 };

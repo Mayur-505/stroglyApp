@@ -16,4 +16,18 @@ class ExerciseDetailItem {
     required this.instructions,
     required this.keyTips,
   });
+
+  factory ExerciseDetailItem.fromJson(Map<String, dynamic> json) {
+    final rawInst = json['instructions'] as List<dynamic>? ?? [];
+    final rawTips = json['keyTips'] as List<dynamic>? ?? [];
+    return ExerciseDetailItem(
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      targetArea: json['targetArea']?.toString() ?? '',
+      imagePath: json['imagePath']?.toString() ?? 'assets/images/jumping_jacks.jpg',
+      duration: json['duration']?.toString() ?? '00:30',
+      instructions: rawInst.map((e) => e.toString()).toList(),
+      keyTips: rawTips.map((e) => e.toString()).toList(),
+    );
+  }
 }

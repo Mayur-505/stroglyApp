@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/workout_models.dart';
 
 class MuscleGroupCard extends StatelessWidget {
@@ -50,11 +51,10 @@ class MuscleGroupCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset(
-                      item.imagePath,
+                    AppImage(
+                      imagePath: item.imagePath,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
+                      errorWidget: const SizedBox.shrink(),
                     ),
                     Container(
                       decoration: const BoxDecoration(

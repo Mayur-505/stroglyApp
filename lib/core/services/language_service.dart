@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../localization/app_translations.dart';
 
-class LanguageService {
+class LanguageService extends ChangeNotifier {
   static final LanguageService instance = LanguageService._internal();
   factory LanguageService() => instance;
   LanguageService._internal();
@@ -18,6 +18,7 @@ class LanguageService {
       final savedCode = prefs.getString(_prefKey);
       if (savedCode != null && AppTranslations.translations.containsKey(savedCode)) {
         currentLanguageNotifier.value = savedCode;
+        notifyListeners();
       }
     } catch (_) {}
   }
@@ -25,6 +26,7 @@ class LanguageService {
   Future<void> setLanguage(String languageCode) async {
     if (!AppTranslations.translations.containsKey(languageCode)) return;
     currentLanguageNotifier.value = languageCode;
+    notifyListeners();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefKey, languageCode);

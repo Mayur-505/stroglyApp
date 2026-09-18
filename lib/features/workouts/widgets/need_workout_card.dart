@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/workout_models.dart';
 
 class NeedWorkoutCard extends StatelessWidget {
@@ -17,6 +18,7 @@ class NeedWorkoutCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        width: 220,
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           color: const Color(0xFF1B1B1D),
@@ -34,10 +36,10 @@ class NeedWorkoutCard extends StatelessWidget {
               child: SizedBox(
                 width: 48,
                 height: 48,
-                child: Image.asset(
-                  item.imagePath,
+                child: AppImage(
+                  imagePath: item.imagePath,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  errorWidget: Container(
                     color: const Color(0xFF242426),
                     child: const Icon(
                       Icons.fitness_center_rounded,

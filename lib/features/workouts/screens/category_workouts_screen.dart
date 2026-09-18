@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/categories_mock_data.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_constants.dart';
 import '../models/category_workout_models.dart';
 import '../widgets/category_workout_tile.dart';
 import '../widgets/workout_customization_flow_sheet.dart';
@@ -21,36 +23,121 @@ class CategoryWorkoutsScreen extends StatefulWidget {
 
 class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
   late String _selectedCategory;
+  List<String> _filterCategories = ['All'];
+  List<CategoryWorkoutItem> _workouts = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _selectedCategory = _resolveInitialCategory(widget.initialCategory);
+    final initial = widget.initialCategory?.trim();
+    if (initial == null || initial.isEmpty || initial.toLowerCase() == 'all') {
+      _selectedCategory = 'All';
+    } else {
+      _selectedCategory = initial.replaceAll('_', ' ');
+    }
+    _fetchCategoryWorkouts();
+    LanguageService.instance.currentLanguageNotifier.addListener(_onLanguageChanged);
   }
 
-  String _resolveInitialCategory(String? initial) {
-    if (initial == null) return 'All';
+  @override
+  void dispose() {
+    LanguageService.instance.currentLanguageNotifier.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
 
-    final normalized = initial.trim().toLowerCase();
-    for (final cat in CategoriesMockData.filterCategories) {
-      final catNorm = cat.toLowerCase();
-      if (normalized == catNorm ||
-          normalized.contains(catNorm) ||
-          catNorm.contains(normalized)) {
-        return cat;
+  void _onLanguageChanged() {
+    _fetchCategoryWorkouts();
+  }
+
+  bool _isAllCategory(String cat) {
+    final lower = cat.trim().toLowerCase();
+    if (lower == 'all' || lower == 'सभी' || lower == 'બધા' || lower == 'todos' || lower == 'tous') {
+      return true;
+    }
+    if (_filterCategories.isNotEmpty && cat == _filterCategories.first) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isCategoryMatch(String chip, String selected) {
+    if (_isAllCategory(chip) && _isAllCategory(selected)) {
+      return true;
+    }
+    final normChip = chip.trim().toLowerCase().replaceAll('_', ' ');
+    final normSelected = selected.trim().toLowerCase().replaceAll('_', ' ');
+    return normChip == normSelected;
+  }
+
+  Future<void> _fetchCategoryWorkouts() async {
+    setState(() => _isLoading = true);
+
+    final categoryQuery = _isAllCategory(_selectedCategory) ? 'All' : _selectedCategory;
+    final res = await ApiClient.instance.get(
+      ApiConstants.categoryWorkouts,
+      queryParams: {'category': categoryQuery},
+    );
+
+    if (!mounted) return;
+
+    if (res.isOk && res.data is Map) {
+      final data = res.data as Map<String, dynamic>;
+      final catList = data['filterCategories'];
+      final workoutList = data['workouts'];
+
+      setState(() {
+        if (catList is List && catList.isNotEmpty) {
+          _filterCategories = catList.map((c) => c.toString()).toList();
+        }
+
+        final matchedCatFromApi = data['matchedCategory']?.toString();
+
+        // 1. Check if selected category directly matches any chip
+        int matchIdx = _filterCategories.indexWhere((c) => _isCategoryMatch(c, _selectedCategory));
+
+        // 2. If backend returned a matched category, use that
+        if (matchIdx < 0 && matchedCatFromApi != null && matchedCatFromApi.isNotEmpty) {
+          matchIdx = _filterCategories.indexWhere((c) => _isCategoryMatch(c, matchedCatFromApi));
+        }
+
+        // 3. Substring match (e.g. "Full Body Burn" contains "Full body")
+        if (matchIdx < 0) {
+          final selLower = _selectedCategory.toLowerCase();
+          matchIdx = _filterCategories.indexWhere((c) {
+            if (_isAllCategory(c)) return false;
+            final cLower = c.toLowerCase();
+            return selLower.contains(cLower) || cLower.contains(selLower);
+          });
+        }
+
+        // 4. Activate matched chip, or fallback to 'All'
+        if (matchIdx >= 0) {
+          _selectedCategory = _filterCategories[matchIdx];
+        } else {
+          _selectedCategory = _filterCategories.isNotEmpty ? _filterCategories.first : 'All';
+        }
+
+        if (workoutList is List && workoutList.isNotEmpty) {
+          _workouts = workoutList
+              .map((w) => CategoryWorkoutItem.fromJson(w as Map<String, dynamic>))
+              .toList();
+        } else {
+          _workouts = [];
+        }
+        _isLoading = false;
+      });
+
+      // If category fell back to 'All' and 0 workouts returned, refetch for 'All'
+      if (_isAllCategory(_selectedCategory) && categoryQuery != 'All' && _workouts.isEmpty) {
+        _fetchCategoryWorkouts();
       }
+    } else {
+      setState(() {
+        _workouts = [];
+        _isLoading = false;
+      });
     }
-    return 'All';
-  }
-
-  List<CategoryWorkoutItem> get _filteredWorkouts {
-    if (_selectedCategory == 'All') {
-      return CategoriesMockData.categoryWorkouts;
-    }
-    return CategoriesMockData.categoryWorkouts
-        .where((item) =>
-            item.category.toLowerCase() == _selectedCategory.toLowerCase())
-        .toList();
   }
 
   @override
@@ -106,17 +193,18 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                itemCount: CategoriesMockData.filterCategories.length,
+                itemCount: _filterCategories.length,
                 separatorBuilder: (context, index) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                  final category = CategoriesMockData.filterCategories[index];
-                  final isSelected = category == _selectedCategory;
+                  final category = _filterCategories[index];
+                  final isSelected = _isCategoryMatch(category, _selectedCategory);
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
                         _selectedCategory = category;
                       });
+                      _fetchCategoryWorkouts();
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
@@ -142,11 +230,8 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
                         category,
                         style: GoogleFonts.outfit(
                           fontSize: 14,
-                          fontWeight:
-                              isSelected ? FontWeight.w800 : FontWeight.w500,
-                          color: isSelected
-                              ? const Color(0xFF141416)
-                              : Colors.white70,
+                          fontWeight: FontWeight.w700,
+                          color: isSelected ? Colors.black : Colors.white70,
                         ),
                       ),
                     ),
@@ -159,74 +244,77 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
 
             // Workouts List
             Expanded(
-              child: _filteredWorkouts.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No workouts found in this category',
-                        style: GoogleFonts.outfit(
-                          fontSize: 15,
-                          color: Colors.white54,
-                        ),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryLime,
                       ),
                     )
-                  : ListView.separated(
-                      padding: EdgeInsets.only(
-                        left: 20.0,
-                        right: 20.0,
-                        top: 8.0,
-                        bottom: 24.0 + MediaQuery.of(context).viewPadding.bottom,
-                      ),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _filteredWorkouts.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        final item = _filteredWorkouts[index];
-                        return CategoryWorkoutTile(
-                          item: item,
-                          onTap: () => _handleWorkoutTap(item),
-                        );
-                      },
-                    ),
+                  : _workouts.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No workouts found',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white60,
+                              fontSize: 16,
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          itemCount: _workouts.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final workout = _workouts[index];
+                            return CategoryWorkoutTile(
+                              item: workout,
+                              onTap: () {
+                                if (workout.isLocked) {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => WorkoutUnlockSheet(
+                                      workout: workout,
+                                      onUnlocked: () {
+                                        Navigator.of(context).pop();
+                                        final unlockedItem = workout.copyWith(isFree: true);
+                                        setState(() {
+                                          _workouts[index] = unlockedItem;
+                                        });
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (context) => WorkoutCustomizationFlowSheet(
+                                            workout: unlockedItem,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                } else {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => WorkoutCustomizationFlowSheet(
+                                      workout: workout,
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _handleWorkoutTap(CategoryWorkoutItem item) {
-    if (!item.isFree) {
-      // Premium workout: show Unlock sheet first
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-        useSafeArea: true,
-        constraints: const BoxConstraints(maxWidth: double.infinity),
-        builder: (bottomSheetContext) => WorkoutUnlockSheet(
-          workout: item,
-          onUnlocked: () {
-            Navigator.of(bottomSheetContext).pop(); // close unlock sheet
-            _openCustomizationFlow(item);
-          },
-        ),
-      );
-    } else {
-      // Free workout: open customization flow directly
-      _openCustomizationFlow(item);
-    }
-  }
-
-  void _openCustomizationFlow(CategoryWorkoutItem item) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      useSafeArea: true,
-      constraints: const BoxConstraints(maxWidth: double.infinity),
-      builder: (_) => WorkoutCustomizationFlowSheet(
-        workout: item,
       ),
     );
   }

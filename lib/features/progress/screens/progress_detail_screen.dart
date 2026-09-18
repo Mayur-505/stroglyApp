@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
 import '../models/progress_models.dart';
 import '../widgets/monthly_calendar_card.dart';
@@ -21,11 +22,56 @@ class ProgressDetailScreen extends StatefulWidget {
 
 class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
   late ProgressTabType _currentTab;
+  String _month = 'September 2026';
+  List<WorkoutHistoryLogItem> _historyLogs = [];
+  WeeklyActivityChartData? _workoutChart;
 
   @override
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
+    _fetchHistory();
+    LanguageService.instance.addListener(_onLanguageChanged);
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) {
+      _fetchHistory();
+    }
+  }
+
+  Future<void> _fetchHistory() async {
+    try {
+      final res = await ApiClient.instance.get('/progress/history');
+      if (res.isOk && res.data != null) {
+        final data = res.data as Map<String, dynamic>;
+        _month = data['month']?.toString() ?? 'September 2026';
+        final rawLogs = data['workoutHistoryLogs'] as List<dynamic>? ?? [];
+        _historyLogs = rawLogs
+            .map((e) => WorkoutHistoryLogItem.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      }
+
+      final dashRes = await ApiClient.instance.get('/progress/dashboard');
+      if (dashRes.isOk && dashRes.data != null) {
+        final charts = dashRes.data['charts'] as Map<String, dynamic>? ?? {};
+        if (charts['workoutChart'] != null) {
+          _workoutChart = WeeklyActivityChartData.fromJson(
+            Map<String, dynamic>.from(charts['workoutChart'] as Map),
+          );
+        }
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (_) {}
   }
 
   @override
@@ -120,7 +166,10 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
         const SizedBox(height: 12),
 
         // Summary Average Card
-        const ProgressSummaryCard(),
+        ProgressSummaryCard(
+          days: _workoutChart?.days,
+          averageValue: _workoutChart?.weeklyAverageText ?? '1',
+        ),
       ],
     );
   }
@@ -129,8 +178,10 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Monthly Calendar Card (September 2026)
-        const MonthlyCalendarCard(),
+        // Monthly Calendar Card
+        MonthlyCalendarCard(
+          monthTitle: _month,
+        ),
         const SizedBox(height: 22),
 
         // Section Header
@@ -144,8 +195,11 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
         ),
         const SizedBox(height: 12),
 
-        // Workout History Card (Full Body Shred Level 1 logs)
-        const WorkoutHistoryCard(),
+        // Workout History Card
+        WorkoutHistoryCard(
+          logs: _historyLogs,
+          totalWorkouts: _historyLogs.length,
+        ),
       ],
     );
   }

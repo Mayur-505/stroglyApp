@@ -127,4 +127,9 @@ const Map<String, String> jaTranslations = {
   'rate_us': '評価する',
   'privacy_policy': 'プライバシーポリシー',
   'terms_of_service': '利用規約',
+
+  // Where to train sheet
+  'where_to_train': 'トレーニング場所',
+  'in_the_gym': 'ジムで',
+  'at_home': '自宅で',
 };

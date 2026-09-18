@@ -10,6 +10,15 @@ class MuscleGroupItem {
     required this.workoutCount,
     required this.imagePath,
   });
+
+  factory MuscleGroupItem.fromJson(Map<String, dynamic> json) {
+    return MuscleGroupItem(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      workoutCount: json['workoutCount']?.toString() ?? '10 Workouts',
+      imagePath: json['imagePath']?.toString() ?? 'assets/images/muscle_abs.jpg',
+    );
+  }
 }
 
 class TargetFocusItem {
@@ -24,6 +33,15 @@ class TargetFocusItem {
     required this.workoutCount,
     required this.imagePath,
   });
+
+  factory TargetFocusItem.fromJson(Map<String, dynamic> json) {
+    return TargetFocusItem(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      workoutCount: json['workoutCount']?.toString() ?? '10 Workouts',
+      imagePath: json['imagePath']?.toString() ?? 'assets/images/target_lose_weight.jpg',
+    );
+  }
 }
 
 class QuickWorkoutItem {
@@ -38,4 +56,13 @@ class QuickWorkoutItem {
     required this.workoutCount,
     required this.imagePath,
   });
+
+  factory QuickWorkoutItem.fromJson(Map<String, dynamic> json) {
+    return QuickWorkoutItem(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      workoutCount: json['workoutCount']?.toString() ?? '5 Workouts',
+      imagePath: json['imagePath']?.toString() ?? 'assets/images/need_hiit.jpg',
+    );
+  }
 }

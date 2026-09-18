@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/progress_mock_data.dart';
 import '../models/progress_models.dart';
 
 class WorkoutHistoryCard extends StatelessWidget {
@@ -12,10 +11,10 @@ class WorkoutHistoryCard extends StatelessWidget {
 
   const WorkoutHistoryCard({
     super.key,
-    this.dateRange = 'Aug 30 - Sep 5',
-    this.year = '2028',
-    this.totalWorkouts = 11,
-    this.logs = ProgressMockData.workoutHistoryLogs,
+    this.dateRange = '',
+    this.year = '',
+    this.totalWorkouts = 0,
+    this.logs = const [],
     this.onItemTap,
   });
 

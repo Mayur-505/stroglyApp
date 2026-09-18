@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/exercise_mock_data.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 import 'active_workout_landscape_screen.dart';
 
@@ -10,6 +10,8 @@ class ExercisePreviewScreen extends StatefulWidget {
   final String workoutTitle;
   final bool showStartButton;
   final int initialIndex;
+  final List<ExerciseDetailItem>? exercises;
+  final String? planId;
   final VoidCallback? onStart;
   final VoidCallback? onComplete;
 
@@ -19,6 +21,8 @@ class ExercisePreviewScreen extends StatefulWidget {
     this.workoutTitle = 'Full Body Burn',
     this.showStartButton = false,
     this.initialIndex = 0,
+    this.exercises,
+    this.planId,
     this.onStart,
     this.onComplete,
   });
@@ -34,7 +38,11 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
   @override
   void initState() {
     super.initState();
-    _exercises = ExerciseMockData.getDayExercises(widget.dayNumber);
+    if (widget.exercises != null && widget.exercises!.isNotEmpty) {
+      _exercises = List<ExerciseDetailItem>.from(widget.exercises!);
+    } else {
+      _exercises = [];
+    }
     _currentIndex = (widget.initialIndex >= 0 &&
             widget.initialIndex < _exercises.length)
         ? widget.initialIndex
@@ -59,6 +67,25 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_exercises.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0D0D0E),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: Center(
+          child: Text(
+            'No exercises available for this workout.',
+            style: GoogleFonts.outfit(color: Colors.white70),
+          ),
+        ),
+      );
+    }
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
     final currentExercise = _exercises[_currentIndex];
 
@@ -227,11 +254,10 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Image.asset(
-                            currentExercise.imagePath,
+                          child: AppImage(
+                            imagePath: currentExercise.imagePath,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
+                            errorWidget: const Icon(
                               Icons.fitness_center_rounded,
                               color: Color(0xFF141416),
                               size: 64,
@@ -293,6 +319,7 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
                           dayNumber: widget.dayNumber,
                           workoutTitle: widget.workoutTitle,
                           initialExerciseIndex: _currentIndex,
+                          exercises: _exercises,
                           onComplete: () {
                             widget.onComplete?.call();
                           },

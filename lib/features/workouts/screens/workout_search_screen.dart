@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/search_mock_data.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_constants.dart';
+import '../models/category_workout_models.dart';
+import '../widgets/category_workout_tile.dart';
+import '../widgets/workout_customization_flow_sheet.dart';
 
 class WorkoutSearchScreen extends StatefulWidget {
   const WorkoutSearchScreen({super.key});
@@ -13,14 +17,30 @@ class WorkoutSearchScreen extends StatefulWidget {
 class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _activeSearch = '';
+  List<String> _bodyFocusTags = [];
+  List<String> _hotTopicTags = [];
+
+  List<CategoryWorkoutItem> _searchResults = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
+    _fetchTags();
     _searchController.addListener(() {
-      setState(() {
-        _activeSearch = _searchController.text.trim();
-      });
+      final text = _searchController.text.trim();
+      if (text != _activeSearch) {
+        setState(() {
+          _activeSearch = text;
+        });
+        if (text.isNotEmpty) {
+          _performSearch(text);
+        } else {
+          setState(() {
+            _searchResults = [];
+          });
+        }
+      }
     });
   }
 
@@ -28,6 +48,57 @@ class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchTags() async {
+    final res = await ApiClient.instance.get(ApiConstants.searchTags);
+    if (!mounted) return;
+
+    if (res.isOk && res.data is Map) {
+      final data = res.data as Map<String, dynamic>;
+      final bf = data['bodyFocusTags'];
+      final ht = data['hotTopicTags'];
+
+      setState(() {
+        if (bf is List && bf.isNotEmpty) {
+          _bodyFocusTags = bf.map((item) {
+            if (item is Map) return item['name']?.toString() ?? '';
+            return item.toString();
+          }).where((s) => s.isNotEmpty).toList();
+        }
+        if (ht is List && ht.isNotEmpty) {
+          _hotTopicTags = ht.map((item) {
+            if (item is Map) return item['name']?.toString() ?? '';
+            return item.toString();
+          }).where((s) => s.isNotEmpty).toList();
+        }
+      });
+    }
+  }
+
+  Future<void> _performSearch(String query) async {
+    setState(() => _isSearching = true);
+    final res = await ApiClient.instance.get(
+      ApiConstants.searchWorkouts,
+      queryParams: {'query': query},
+    );
+
+    if (!mounted) return;
+
+    if (res.isOk && res.data is List) {
+      final list = res.data as List;
+      setState(() {
+        _searchResults = list
+            .map((item) => CategoryWorkoutItem.fromJson(item as Map<String, dynamic>))
+            .toList();
+        _isSearching = false;
+      });
+    } else {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+    }
   }
 
   void _onTagTap(String tag) {
@@ -50,7 +121,6 @@ class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
               // Search Input + Close Button Header
               Row(
                 children: [
-                  // Search Field
                   Expanded(
                     child: Container(
                       height: 48,
@@ -107,7 +177,6 @@ class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
 
                   const SizedBox(width: 12),
 
-                  // Circular Close Button ("X")
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
@@ -131,109 +200,125 @@ class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
                 ],
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
 
-              // Search Filter Feedback (if search active)
-              if (_activeSearch.isNotEmpty) ...[
-                Text(
-                  'Results for "$_activeSearch"',
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryLime,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1B1B1D),
-                    borderRadius: BorderRadius.circular(16.0),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.fitness_center_rounded,
-                        color: AppColors.primaryLime,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Showing matching workouts and training routines',
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Section 1: Body Focus
-              Text(
-                'Body Focus',
-                style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              Wrap(
-                spacing: 10,
-                runSpacing: 12,
-                children: SearchMockData.bodyFocusTags.map((tag) {
-                  final isSelected =
-                      _activeSearch.toLowerCase() == tag.toLowerCase();
-
-                  return _buildTagChip(
-                    tag: tag,
-                    isSelected: isSelected,
-                    onTap: () => _onTagTap(tag),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 28),
-
-              // Section 2: Hot Topics
-              Text(
-                'Hot Topics',
-                style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              Wrap(
-                spacing: 10,
-                runSpacing: 12,
-                children: SearchMockData.hotTopicTags.map((tag) {
-                  final isSelected =
-                      _activeSearch.toLowerCase() == tag.toLowerCase();
-
-                  return _buildTagChip(
-                    tag: tag,
-                    isSelected: isSelected,
-                    onTap: () => _onTagTap(tag),
-                  );
-                }).toList(),
+              // Search Results (if searching) or Tags view
+              Expanded(
+                child: _activeSearch.isNotEmpty
+                    ? _buildSearchResultsView()
+                    : _buildTagsView(),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResultsView() {
+    if (_isSearching) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryLime),
+      );
+    }
+
+    if (_searchResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.search_off_rounded, size: 48, color: Colors.white38),
+            const SizedBox(height: 12),
+            Text(
+              'No workouts found for "$_activeSearch"',
+              style: GoogleFonts.outfit(fontSize: 15, color: Colors.white60),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      itemCount: _searchResults.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 14),
+      itemBuilder: (context, index) {
+        final workout = _searchResults[index];
+        return CategoryWorkoutTile(
+          item: workout,
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => WorkoutCustomizationFlowSheet(
+                workout: workout,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTagsView() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section 1: Body Focus
+          Text(
+            'Body Focus',
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          Wrap(
+            spacing: 10,
+            runSpacing: 12,
+            children: _bodyFocusTags.map((tag) {
+              final isSelected = _activeSearch.toLowerCase() == tag.toLowerCase();
+              return _buildTagChip(
+                tag: tag,
+                isSelected: isSelected,
+                onTap: () => _onTagTap(tag),
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 28),
+
+          // Section 2: Hot Topics
+          Text(
+            'Hot Topics',
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          Wrap(
+            spacing: 10,
+            runSpacing: 12,
+            children: _hotTopicTags.map((tag) {
+              final isSelected = _activeSearch.toLowerCase() == tag.toLowerCase();
+              return _buildTagChip(
+                tag: tag,
+                isSelected: isSelected,
+                onTap: () => _onTagTap(tag),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -252,9 +337,7 @@ class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
           color: isSelected ? AppColors.primaryLime : const Color(0xFF1B1B1D),
           borderRadius: BorderRadius.circular(20.0),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primaryLime
-                : Colors.white.withValues(alpha: 0.10),
+            color: isSelected ? AppColors.primaryLime : Colors.white.withValues(alpha: 0.10),
             width: 1.0,
           ),
         ),

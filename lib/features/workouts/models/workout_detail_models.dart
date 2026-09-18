@@ -15,6 +15,20 @@ class WorkoutDayItem {
 
   bool get isInProgress => isUnlocked && !isCompleted && progress > 0;
 
+  factory WorkoutDayItem.fromJson(Map<String, dynamic> json) {
+    return WorkoutDayItem(
+      dayNumber: json['dayNumber'] is int
+          ? json['dayNumber']
+          : int.tryParse(json['dayNumber']?.toString() ?? '1') ?? 1,
+      duration: json['duration']?.toString() ?? '10-20 min',
+      progress: (json['progress'] is num)
+          ? (json['progress'] as num).toDouble()
+          : (double.tryParse(json['progress']?.toString() ?? '0') ?? 0.0),
+      isUnlocked: json['isUnlocked'] == true,
+      isCompleted: json['isCompleted'] == true,
+    );
+  }
+
   WorkoutDayItem copyWith({
     int? dayNumber,
     String? duration,
@@ -56,4 +70,28 @@ class WorkoutDetailData {
     required this.descriptionParagraph2,
     required this.days,
   });
+
+  factory WorkoutDetailData.fromJson(Map<String, dynamic> json) {
+    final rawDays = json['days'] as List<dynamic>? ?? [];
+    return WorkoutDetailData(
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      title: json['title']?.toString() ?? 'Workout Plan',
+      heroImage: json['heroImage']?.toString() ?? 'assets/images/featured_workout.jpg',
+      totalDays: json['totalDays'] is int
+          ? json['totalDays']
+          : int.tryParse(json['totalDays']?.toString() ?? '30') ?? 30,
+      dailyDuration: json['dailyDuration']?.toString() ?? '8-15',
+      strengthLevel: json['strengthLevel'] is int
+          ? json['strengthLevel']
+          : int.tryParse(json['strengthLevel']?.toString() ?? '2') ?? 2,
+      cardioLevel: json['cardioLevel'] is int
+          ? json['cardioLevel']
+          : int.tryParse(json['cardioLevel']?.toString() ?? '2') ?? 2,
+      descriptionParagraph1: json['descriptionParagraph1']?.toString() ?? '',
+      descriptionParagraph2: json['descriptionParagraph2']?.toString() ?? '',
+      days: rawDays
+          .map((e) => WorkoutDayItem.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+    );
+  }
 }

@@ -41,10 +41,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    LanguageService.instance.currentLanguageNotifier.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    LanguageService.instance.currentLanguageNotifier.removeListener(_onLanguageChanged);
     _pageController.dispose();
     super.dispose();
   }

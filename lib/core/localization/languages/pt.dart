@@ -127,4 +127,9 @@ const Map<String, String> ptTranslations = {
   'rate_us': 'Avalie-nos',
   'privacy_policy': 'Política de privacidade',
   'terms_of_service': 'Termos de serviço',
+
+  // Where to train sheet
+  'where_to_train': 'Onde treinar',
+  'in_the_gym': 'Na academia',
+  'at_home': 'Em casa',
 };

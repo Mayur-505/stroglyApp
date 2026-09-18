@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/workout_models.dart';
 
 class TargetFocusCard extends StatelessWidget {
@@ -43,11 +44,10 @@ class TargetFocusCard extends StatelessWidget {
             children: [
               // Background Photo
               Positioned.fill(
-                child: Image.asset(
-                  item.imagePath,
+                child: AppImage(
+                  imagePath: item.imagePath,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
+                  errorWidget: const SizedBox.shrink(),
                 ),
               ),
 

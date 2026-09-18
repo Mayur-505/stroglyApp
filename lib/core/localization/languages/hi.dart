@@ -127,4 +127,10 @@ const Map<String, String> hiTranslations = {
   'rate_us': 'रेट करें',
   'privacy_policy': 'गोपनीयता नीति',
   'terms_of_service': 'सेवा की शर्तें',
+  'delete_account': 'खाता हटाएं',
+
+  // Where to train sheet
+  'where_to_train': 'कहाँ कसरत करनी है',
+  'in_the_gym': 'जिम में',
+  'at_home': 'घर पर',
 };

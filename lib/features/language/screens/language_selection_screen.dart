@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/language_service.dart';
 import '../../gender_selection/screens/gender_selection_screen.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_constants.dart';
 import '../models/language_item.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
@@ -50,7 +52,13 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   }
 
   Future<void> _onContinue() async {
-    await LanguageService.instance.setLanguage(_selectedCode);
+    LanguageService.instance.setLanguage(_selectedCode);
+
+    // Sync language with backend if authenticated
+    ApiClient.instance.put(
+      ApiConstants.updateLanguage,
+      {'language': _selectedCode},
+    ).catchError((_) => ApiResponse(success: false, statusCode: 500));
 
     if (!mounted) return;
 
@@ -59,7 +67,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     } else {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 500),
+          transitionDuration: const Duration(milliseconds: 400),
           pageBuilder: (context, animation, secondaryAnimation) =>
               const GenderSelectionScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -224,7 +232,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                       setState(() {
                         _selectedCode = lang.code;
                       });
-                      LanguageService.instance.setLanguage(lang.code);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),

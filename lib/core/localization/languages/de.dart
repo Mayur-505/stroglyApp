@@ -127,4 +127,9 @@ const Map<String, String> deTranslations = {
   'rate_us': 'Bewerte uns',
   'privacy_policy': 'Datenschutzrichtlinie',
   'terms_of_service': 'Nutzungsbedingungen',
+
+  // Where to train sheet
+  'where_to_train': 'Wo trainieren',
+  'in_the_gym': 'Im Fitnessstudio',
+  'at_home': 'Zu Hause',
 };

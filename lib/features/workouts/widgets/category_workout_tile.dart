@@ -33,18 +33,31 @@ class CategoryWorkoutTile extends StatelessWidget {
               child: SizedBox(
                 width: 66,
                 height: 66,
-                child: Image.asset(
-                  item.imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: const Color(0xFF1B1B1D),
-                    child: const Icon(
-                      Icons.fitness_center_rounded,
-                      color: Colors.white38,
-                      size: 26,
-                    ),
-                  ),
-                ),
+                child: item.imagePath.startsWith('http')
+                    ? Image.network(
+                        item.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFF1B1B1D),
+                          child: const Icon(
+                            Icons.fitness_center_rounded,
+                            color: Colors.white38,
+                            size: 26,
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        item.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFF1B1B1D),
+                          child: const Icon(
+                            Icons.fitness_center_rounded,
+                            color: Colors.white38,
+                            size: 26,
+                          ),
+                        ),
+                      ),
               ),
             ),
 

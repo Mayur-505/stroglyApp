@@ -10,6 +10,15 @@ class DayStatusItem {
     this.isCompleted = false,
     this.isToday = false,
   });
+
+  factory DayStatusItem.fromJson(Map<String, dynamic> json) {
+    return DayStatusItem(
+      dayName: json['dayName']?.toString() ?? '',
+      dateText: json['dateText']?.toString() ?? '',
+      isCompleted: json['isCompleted'] == true,
+      isToday: json['isToday'] == true,
+    );
+  }
 }
 
 class ProgressStatItem {
@@ -26,6 +35,16 @@ class ProgressStatItem {
     required this.weekValue,
     this.iconPath,
   });
+
+  factory ProgressStatItem.fromJson(Map<String, dynamic> json) {
+    return ProgressStatItem(
+      title: json['title']?.toString() ?? '',
+      unit: json['unit']?.toString() ?? '',
+      totalValue: json['totalValue']?.toString() ?? '0',
+      weekValue: json['weekValue']?.toString() ?? '0',
+      iconPath: json['iconPath']?.toString(),
+    );
+  }
 }
 
 class WeeklyChartDayData {
@@ -40,6 +59,17 @@ class WeeklyChartDayData {
     required this.hasActivity,
     this.isHighlighted = false,
   });
+
+  factory WeeklyChartDayData.fromJson(Map<String, dynamic> json) {
+    return WeeklyChartDayData(
+      dayLabel: json['dayLabel']?.toString() ?? '',
+      value: (json['value'] is num)
+          ? (json['value'] as num).toDouble()
+          : (double.tryParse(json['value']?.toString() ?? '0') ?? 0.0),
+      hasActivity: json['hasActivity'] == true,
+      isHighlighted: json['isHighlighted'] == true,
+    );
+  }
 }
 
 class WeeklyActivityChartData {
@@ -54,6 +84,19 @@ class WeeklyActivityChartData {
     required this.mainValueText,
     required this.days,
   });
+
+  factory WeeklyActivityChartData.fromJson(Map<String, dynamic> json) {
+    final rawDays = json['days'] as List<dynamic>? ?? [];
+    return WeeklyActivityChartData(
+      metricTitle: json['metricTitle']?.toString() ?? '',
+      weeklyAverageText: json['weeklyAverageText']?.toString() ?? '',
+      mainValueText: json['mainValueText']?.toString() ?? '',
+      days: rawDays
+          .map((e) =>
+              WeeklyChartDayData.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+    );
+  }
 }
 
 enum ProgressTabType {
@@ -91,4 +134,15 @@ class WorkoutHistoryLogItem {
     required this.duration,
     required this.calories,
   });
+
+  factory WorkoutHistoryLogItem.fromJson(Map<String, dynamic> json) {
+    return WorkoutHistoryLogItem(
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      time: json['time']?.toString() ?? '',
+      date: json['date']?.toString() ?? '',
+      duration: json['duration']?.toString() ?? '',
+      calories: json['calories']?.toString() ?? '',
+    );
+  }
 }

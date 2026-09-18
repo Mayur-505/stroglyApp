@@ -7,6 +7,10 @@ import '../../../core/constants/app_text_styles.dart';
 import '../widgets/strongly_logo.dart';
 import '../widgets/splash_loader.dart';
 import '../../../core/services/preference_service.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_constants.dart';
+import '../../../core/network/auth_session_manager.dart';
 import '../../onboarding/screens/onboarding_screen.dart';
 import '../../home/screens/home_screen.dart';
 
@@ -45,6 +49,27 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _animController.forward();
+
+    // Initialize guest session in background if not authenticated
+    if (!AuthSessionManager.instance.isAuthenticated) {
+      ApiClient.instance.post(
+        ApiConstants.guestLogin,
+        {'language': LanguageService.instance.currentLanguage},
+      ).then((res) {
+        if (res.isOk && res.data is Map) {
+          final token = res.data['token']?.toString();
+          final user = res.data['user'];
+          if (token != null && user != null) {
+            AuthSessionManager.instance.saveSession(
+              token: token,
+              userId: user['_id']?.toString() ?? '',
+              isGuest: true,
+              name: user['name']?.toString(),
+            );
+          }
+        }
+      }).catchError((_) => null);
+    }
 
     // Auto-navigate to OnboardingScreen (for first-timers) or HomeScreen
     _navTimer = Timer(const Duration(milliseconds: 2800), () async {

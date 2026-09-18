@@ -127,4 +127,10 @@ const Map<String, String> guTranslations = {
   'rate_us': 'રેટિંગ આપો',
   'privacy_policy': 'ગોપનીયતા નીતિ',
   'terms_of_service': 'સેવાની શરતો',
+  'delete_account': 'ખાતું કાઢી નાખો',
+
+  // Where to train sheet
+  'where_to_train': 'ક્યાં કસરત કરવી છે',
+  'in_the_gym': 'જીમમાં',
+  'at_home': 'ઘરે',
 };

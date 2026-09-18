@@ -127,4 +127,9 @@ const Map<String, String> frTranslations = {
   'rate_us': 'Nous évaluer',
   'privacy_policy': 'Politique de confidentialité',
   'terms_of_service': "Conditions d'utilisation",
+
+  // Where to train sheet
+  'where_to_train': "Où s'entraîner",
+  'in_the_gym': 'À la salle',
+  'at_home': 'À la maison',
 };

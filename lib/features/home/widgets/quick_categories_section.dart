@@ -104,7 +104,7 @@ class QuickCategoriesSection extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        LanguageService.tr(cat.id),
+                        cat.name,
                         style: GoogleFonts.outfit(
                           fontSize: 13,
                           fontWeight:

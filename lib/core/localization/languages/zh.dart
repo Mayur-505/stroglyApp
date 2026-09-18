@@ -127,4 +127,9 @@ const Map<String, String> zhTranslations = {
   'rate_us': '给我们评分',
   'privacy_policy': '隐私政策',
   'terms_of_service': '服务条款',
+
+  // Where to train sheet
+  'where_to_train': '训练地点',
+  'in_the_gym': '在健身房',
+  'at_home': '在家里',
 };

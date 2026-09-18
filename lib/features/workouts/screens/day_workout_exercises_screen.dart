@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/exercise_mock_data.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/services/language_service.dart';
 import '../models/exercise_detail_models.dart';
 import 'exercise_preview_screen.dart';
 
 class DayWorkoutExercisesScreen extends StatefulWidget {
+  final String? planId;
   final int dayNumber;
   final String workoutTitle;
   final String heroImage;
@@ -17,6 +19,7 @@ class DayWorkoutExercisesScreen extends StatefulWidget {
 
   const DayWorkoutExercisesScreen({
     super.key,
+    this.planId,
     this.dayNumber = 1,
     this.workoutTitle = 'Full Body Burn',
     this.heroImage = 'assets/images/image 7 (1).png',
@@ -34,13 +37,54 @@ class DayWorkoutExercisesScreen extends StatefulWidget {
 
 class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
   late bool _inProgress;
-  late List<ExerciseDetailItem> _exercises;
+  List<ExerciseDetailItem> _exercises = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _inProgress = widget.isInProgress;
-    _exercises = ExerciseMockData.getDayExercises(widget.dayNumber);
+    _fetchDayExercises();
+    LanguageService.instance.addListener(_onLanguageChanged);
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) {
+      _fetchDayExercises();
+    }
+  }
+
+  Future<void> _fetchDayExercises() async {
+    setState(() => _isLoading = true);
+    try {
+      final plan = widget.planId ?? 'full_body_burn';
+      final response = await ApiClient.instance.get('/plans/$plan/days/${widget.dayNumber}');
+      if (response.isOk && response.data != null) {
+        final rawList = response['data']['exercises'] as List<dynamic>? ?? [];
+        if (mounted) {
+          setState(() {
+            _exercises = rawList
+                .map((e) => ExerciseDetailItem.fromJson(Map<String, dynamic>.from(e as Map)))
+                .toList();
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() {
+        _exercises = [];
+        _isLoading = false;
+      });
+    }
   }
 
   void _handleStart() {
@@ -118,10 +162,22 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
               ),
               const SizedBox(height: 20),
               GestureDetector(
-                onTap: () {
+                onTap: () async {
                   Navigator.of(ctx).pop();
+                  final plan = widget.planId ?? 'full_body_burn';
+                  try {
+                    await ApiClient.instance.post(
+                      '/plans/$plan/days/${widget.dayNumber}/complete',
+                      {
+                        'durationSeconds': 600,
+                        'caloriesBurned': 85,
+                      },
+                    );
+                  } catch (_) {}
                   widget.onComplete?.call();
-                  Navigator.of(context).pop();
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                  }
                 },
                 child: Container(
                   height: 50,
@@ -166,6 +222,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
           workoutTitle: widget.workoutTitle,
           showStartButton: true,
           initialIndex: index,
+          exercises: _exercises,
           onStart: () {
             if (!_inProgress) {
               setState(() {
@@ -174,9 +231,21 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
               widget.onStart?.call();
             }
           },
-          onComplete: () {
+          onComplete: () async {
+            final plan = widget.planId ?? 'full_body_burn';
+            try {
+              await ApiClient.instance.post(
+                '/plans/$plan/days/${widget.dayNumber}/complete',
+                {
+                  'durationSeconds': 600,
+                  'caloriesBurned': 85,
+                },
+              );
+            } catch (_) {}
             widget.onComplete?.call();
-            Navigator.of(context).pop();
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
           },
         ),
       ),
@@ -186,6 +255,15 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+
+    if (_isLoading && _exercises.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0D0D0E),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primaryLime),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0E),
@@ -257,16 +335,27 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
                                   ),
                                   clipBehavior: Clip.antiAlias,
                                   padding: const EdgeInsets.all(4.0),
-                                  child: Image.asset(
-                                    exercise.imagePath,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(
-                                      Icons.fitness_center_rounded,
-                                      color: Color(0xFF141416),
-                                      size: 26,
-                                    ),
-                                  ),
+                                  child: exercise.imagePath.startsWith('http')
+                                      ? Image.network(
+                                          exercise.imagePath,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(
+                                            Icons.fitness_center_rounded,
+                                            color: Color(0xFF141416),
+                                            size: 26,
+                                          ),
+                                        )
+                                      : Image.asset(
+                                          exercise.imagePath,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(
+                                            Icons.fitness_center_rounded,
+                                            color: Color(0xFF141416),
+                                            size: 26,
+                                          ),
+                                        ),
                                 ),
                                 const SizedBox(width: 16),
 
@@ -330,13 +419,21 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
-                widget.heroImage,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: const Color(0xFF161619),
-                ),
-              ),
+              widget.heroImage.startsWith('http')
+                  ? Image.network(
+                      widget.heroImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF161619),
+                      ),
+                    )
+                  : Image.asset(
+                      widget.heroImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF161619),
+                      ),
+                    ),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/category_workout_models.dart';
 import '../models/workout_flow_models.dart';
 import '../screens/workout_detail_plan_screen.dart';
@@ -29,15 +31,15 @@ class _WorkoutCustomizationFlowSheetState
   String _selectedDifficultyId = 'no_experience';
 
   // Step 1 Locations - using official Figma exported 380x160 assets
-  static const List<WorkoutTrainingLocation> _locations = [
+  List<WorkoutTrainingLocation> get _locations => [
     WorkoutTrainingLocation(
       id: 'gym',
-      title: 'In the gym',
+      title: 'in_the_gym'.tr,
       imagePath: 'assets/images/image 7 (1).png',
     ),
     WorkoutTrainingLocation(
       id: 'home',
-      title: 'At home',
+      title: 'at_home'.tr,
       imagePath: 'assets/images/image 7.png',
     ),
   ];
@@ -137,6 +139,7 @@ class _WorkoutCustomizationFlowSheetState
     nav.push(
       MaterialPageRoute(
         builder: (_) => WorkoutDetailPlanScreen(
+          planId: widget.workout.id,
           title: widget.workout.title,
           heroImage: widget.workout.imagePath,
           difficultyLevel: selectedLevel.title,
@@ -199,7 +202,7 @@ class _WorkoutCustomizationFlowSheetState
     String title = '';
     switch (_currentStep) {
       case 0:
-        title = 'Where to train';
+        title = 'where_to_train'.tr;
         break;
       case 1:
         title = 'Training equipment';
@@ -281,9 +284,6 @@ class _WorkoutCustomizationFlowSheetState
           child: GestureDetector(
             onTap: () {
               setState(() {
-                if (_selectedLocationId != loc.id) {
-                  _selectedEquipmentId = null;
-                }
                 _selectedLocationId = loc.id;
               });
               _nextStep();
@@ -319,12 +319,11 @@ class _WorkoutCustomizationFlowSheetState
                   children: [
                     // Full-card background athlete photo
                     Positioned.fill(
-                      child: Image.asset(
-                        loc.imagePath,
+                      child: AppImage(
+                        imagePath: loc.imagePath,
                         fit: BoxFit.cover,
                         alignment: Alignment.centerRight,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
+                        errorWidget: const SizedBox.shrink(),
                       ),
                     ),
 
@@ -419,12 +418,11 @@ class _WorkoutCustomizationFlowSheetState
                   children: [
                     // Full-card background athlete / equipment photo
                     Positioned.fill(
-                      child: Image.asset(
-                        equip.imagePath,
+                      child: AppImage(
+                        imagePath: equip.imagePath,
                         fit: BoxFit.cover,
                         alignment: Alignment.centerRight,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
+                        errorWidget: const SizedBox.shrink(),
                       ),
                     ),
 

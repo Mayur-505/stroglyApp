@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/progress_mock_data.dart';
 import '../models/progress_models.dart';
 
 class MonthlyCalendarCard extends StatelessWidget {
@@ -14,7 +13,7 @@ class MonthlyCalendarCard extends StatelessWidget {
   const MonthlyCalendarCard({
     super.key,
     this.monthTitle = 'September 2026',
-    this.days = ProgressMockData.monthlyDays,
+    this.days = const [],
     this.onPreviousMonth,
     this.onNextMonth,
     this.onDaySelected,

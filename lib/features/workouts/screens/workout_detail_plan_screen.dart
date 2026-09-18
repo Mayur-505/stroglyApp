@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../data/workout_detail_mock_data.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/services/language_service.dart';
 import '../models/workout_detail_models.dart';
 import '../widgets/workout_day_card.dart';
-import 'exercise_preview_screen.dart';
+import 'day_workout_exercises_screen.dart';
 import 'workout_start_schedule_screen.dart';
 
 class WorkoutDetailPlanScreen extends StatefulWidget {
+  final String? planId;
   final String? title;
   final String? heroImage;
   final String? difficultyLevel;
 
   const WorkoutDetailPlanScreen({
     super.key,
+    this.planId,
     this.title,
     this.heroImage,
     this.difficultyLevel,
@@ -25,20 +28,84 @@ class WorkoutDetailPlanScreen extends StatefulWidget {
 }
 
 class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
-  late WorkoutDetailData _detailData;
+  WorkoutDetailData? _detailData;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _detailData = WorkoutDetailMockData.getFullBodyBurnDetail(
-      customTitle: widget.title,
-      customImage: widget.heroImage,
-    );
+    _fetchPlanDetail();
+    LanguageService.instance.addListener(_onLanguageChanged);
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) {
+      _fetchPlanDetail();
+    }
+  }
+
+  Future<void> _fetchPlanDetail() async {
+    setState(() => _isLoading = true);
+    try {
+      final id = widget.planId ?? 'full_body_burn';
+      final response = await ApiClient.instance.get('/plans/$id');
+      if (response.isOk && response.data != null) {
+        final rawMap = response.data is Map
+            ? (response.data as Map<String, dynamic>)['data'] ?? response.data
+            : null;
+        if (rawMap is Map && mounted) {
+          setState(() {
+            _detailData = WorkoutDetailData.fromJson(
+              Map<String, dynamic>.from(rawMap),
+            );
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() {
+        _detailData = null;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+
+    if (_isLoading && _detailData == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0D0D0E),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primaryLime),
+        ),
+      );
+    }
+
+    if (_detailData == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0D0D0E),
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        body: Center(
+          child: Text(
+            'Unable to load workout plan.',
+            style: GoogleFonts.outfit(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
+    final detail = _detailData!;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0E),
@@ -63,7 +130,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _detailData.descriptionParagraph1,
+                        detail.descriptionParagraph1,
                         style: GoogleFonts.outfit(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -73,7 +140,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        _detailData.descriptionParagraph2,
+                        detail.descriptionParagraph2,
                         style: GoogleFonts.outfit(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -91,7 +158,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
-                    children: _detailData.days.map((dayItem) {
+                    children: detail.days.map((dayItem) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: WorkoutDayCard(
@@ -159,6 +226,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
   }
 
   Widget _buildHeroHeader() {
+    final data = _detailData!;
     return Stack(
       children: [
         // Background Hero Image
@@ -168,13 +236,21 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
-                _detailData.heroImage,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: const Color(0xFF161619),
-                ),
-              ),
+              data.heroImage.startsWith('http')
+                  ? Image.network(
+                      data.heroImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF161619),
+                      ),
+                    )
+                  : Image.asset(
+                      data.heroImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF161619),
+                      ),
+                    ),
               // Top & bottom gradient overlays
               Container(
                 decoration: BoxDecoration(
@@ -231,7 +307,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _detailData.title,
+                            data.title,
                             style: GoogleFonts.outfit(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
@@ -244,12 +320,12 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                             children: [
                               _buildIntensityColumn(
                                 'Strength',
-                                _detailData.strengthLevel,
+                                data.strengthLevel,
                               ),
                               const SizedBox(width: 20),
                               _buildIntensityColumn(
                                 'Cardio',
-                                _detailData.cardioLevel,
+                                data.cardioLevel,
                               ),
                             ],
                           ),
@@ -266,7 +342,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             Text(
-                              '${_detailData.totalDays}',
+                              '${data.totalDays}',
                               style: GoogleFonts.outfit(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800,
@@ -289,7 +365,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              _detailData.dailyDuration,
+                              data.dailyDuration,
                               style: GoogleFonts.outfit(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
@@ -353,23 +429,28 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
   }
 
   void _openExercisePreview(int dayNumber) {
+    if (_detailData == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ExercisePreviewScreen(
+        builder: (_) => DayWorkoutExercisesScreen(
+          planId: widget.planId,
           dayNumber: dayNumber,
-          workoutTitle: _detailData.title,
-          showStartButton: false, // Start button is hidden when opened from Ready to go overview screen!
+          workoutTitle: _detailData!.title,
+          heroImage: _detailData!.heroImage,
+          difficultyLevel: widget.difficultyLevel ?? 'No experience',
         ),
       ),
     );
   }
 
   void _openScheduleScreen() {
+    if (_detailData == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => WorkoutStartScheduleScreen(
-          workoutTitle: _detailData.title,
-          heroImage: _detailData.heroImage,
+          planId: widget.planId,
+          workoutTitle: _detailData!.title,
+          heroImage: _detailData!.heroImage,
           difficultyLevel: widget.difficultyLevel ?? 'No experience',
         ),
       ),

@@ -41,21 +41,37 @@ class FeaturedWorkoutCard extends StatelessWidget {
           children: [
             // Background Image
             Positioned.fill(
-              child: Image.asset(
-                workout.imagePath,
-                fit: BoxFit.cover,
-                alignment: Alignment.topCenter,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: const Color(0xFF1E2616),
-                  child: const Center(
-                    child: Icon(
-                      Icons.fitness_center_rounded,
-                      color: AppColors.primaryLime,
-                      size: 64,
+              child: workout.imagePath.startsWith('http')
+                  ? Image.network(
+                      workout.imagePath,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF1E2616),
+                        child: const Center(
+                          child: Icon(
+                            Icons.fitness_center_rounded,
+                            color: AppColors.primaryLime,
+                            size: 64,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      workout.imagePath,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFF1E2616),
+                        child: const Center(
+                          child: Icon(
+                            Icons.fitness_center_rounded,
+                            color: AppColors.primaryLime,
+                            size: 64,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
 
             // Gradient Overlay for contrast

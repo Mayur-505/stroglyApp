@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/exercise_video_player.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 import 'active_workout_landscape_screen.dart';
 
@@ -254,10 +254,14 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: ExerciseVideoPlayer(
-                            videoUrl: currentExercise.videoUrl,
+                          child: AppImage(
                             imagePath: currentExercise.imagePath,
                             fit: BoxFit.contain,
+                            errorWidget: const Icon(
+                              Icons.fitness_center_rounded,
+                              color: Color(0xFF141416),
+                              size: 64,
+                            ),
                           ),
                         ),
                       ),

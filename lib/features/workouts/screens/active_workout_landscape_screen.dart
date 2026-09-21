@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/app_image.dart';
+import '../../../core/widgets/exercise_video_player.dart';
 import '../models/exercise_detail_models.dart';
 
 enum ActiveWorkoutStep {
@@ -300,11 +300,11 @@ class _ActiveWorkoutLandscapeScreenState
               scale: _bounceAnimation,
               child: SizedBox(
                 height: MediaQuery.of(context).size.height * 0.65,
-                child: AppImage(
+                child: ExerciseVideoPlayer(
+                  videoUrl: currentExercise.videoUrl,
                   imagePath: currentExercise.imagePath,
+                  isPlaying: _currentStep == ActiveWorkoutStep.exercising,
                   fit: BoxFit.contain,
-                  errorWidget:
-                      const Icon(Icons.fitness_center_rounded, size: 80),
                 ),
               ),
             ),
@@ -755,14 +755,11 @@ class _ActiveWorkoutLandscapeScreenState
                       Center(
                         child: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.58,
-                          child: AppImage(
+                          child: ExerciseVideoPlayer(
+                            videoUrl: nextExercise.videoUrl,
                             imagePath: nextExercise.imagePath,
+                            isPlaying: true,
                             fit: BoxFit.contain,
-                            errorWidget: const Icon(
-                              Icons.fitness_center_rounded,
-                              size: 64,
-                              color: Color(0xFF141416),
-                            ),
                           ),
                         ),
                       ),

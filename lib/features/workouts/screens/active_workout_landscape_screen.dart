@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
+import '../widgets/exercise_video_player.dart';
 
 enum ActiveWorkoutStep {
   exercising,
@@ -278,36 +279,39 @@ class _ActiveWorkoutLandscapeScreenState
       ),
       child: Stack(
         children: [
-          // Background STRONGLY Brand Watermark
-          Center(
-            child: Opacity(
-              opacity: 0.08,
-              child: Text(
-                'STRONGLY',
-                style: GoogleFonts.outfit(
-                  fontSize: 84,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primaryLime,
-                  letterSpacing: 10,
-                ),
-              ),
-            ),
-          ),
+          // Background watermark removed as requested
 
-          // Center Animated Character Illustration
+          // Center Animated Character Illustration or Video Player
           Center(
-            child: ScaleTransition(
-              scale: _bounceAnimation,
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.65,
-                child: AppImage(
-                  imagePath: currentExercise.imagePath,
-                  fit: BoxFit.contain,
-                  errorWidget:
-                      const Icon(Icons.fitness_center_rounded, size: 80),
-                ),
-              ),
-            ),
+            child: currentExercise.videoUrl != null &&
+                    currentExercise.videoUrl!.isNotEmpty
+                ? SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.65,
+                    child: ExerciseVideoPlayer(
+                      videoUrl: currentExercise.videoUrl!,
+                      isPlaying: _currentStep == ActiveWorkoutStep.exercising,
+                      isMuted: _isMuted,
+                    ),
+                  )
+                : ScaleTransition(
+                    scale: _bounceAnimation,
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.65,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F6F6),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: AppImage(
+                          imagePath: currentExercise.imagePath,
+                          fit: BoxFit.contain,
+                          errorWidget:
+                              const Icon(Icons.fitness_center_rounded, size: 80),
+                        ),
+                      ),
+                    ),
+                  ),
           ),
 
           // Top Row: Exercise X/13, Sound Toggle, Elapsed Time
@@ -696,21 +700,7 @@ class _ActiveWorkoutLandscapeScreenState
               padding: const EdgeInsets.all(24.0),
               child: Stack(
                 children: [
-                  // Watermark
-                  Center(
-                    child: Opacity(
-                      opacity: 0.08,
-                      child: Text(
-                        'STRONGLY',
-                        style: GoogleFonts.outfit(
-                          fontSize: 68,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.primaryLime,
-                          letterSpacing: 8,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Watermark removed as requested
 
                   // Content
                   Column(
@@ -751,22 +741,26 @@ class _ActiveWorkoutLandscapeScreenState
                           color: const Color(0xFF141416),
                         ),
                       ),
-                      const Spacer(),
-                      Center(
-                        child: SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.58,
-                          child: AppImage(
-                            imagePath: nextExercise.imagePath,
-                            fit: BoxFit.contain,
-                            errorWidget: const Icon(
-                              Icons.fitness_center_rounded,
-                              size: 64,
-                              color: Color(0xFF141416),
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF6F6F6),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: AppImage(
+                              imagePath: nextExercise.imagePath,
+                              fit: BoxFit.contain,
+                              errorWidget: const Icon(
+                                Icons.fitness_center_rounded,
+                                size: 64,
+                                color: Color(0xFF141416),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      const Spacer(),
                     ],
                   ),
                 ],

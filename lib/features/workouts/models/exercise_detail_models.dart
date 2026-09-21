@@ -3,6 +3,7 @@ class ExerciseDetailItem {
   final String title;
   final String targetArea;
   final String imagePath;
+  final String? videoUrl;
   final String duration;
   final List<String> instructions;
   final List<String> keyTips;
@@ -12,6 +13,7 @@ class ExerciseDetailItem {
     required this.title,
     required this.targetArea,
     required this.imagePath,
+    this.videoUrl,
     this.duration = '00:30',
     required this.instructions,
     required this.keyTips,
@@ -25,6 +27,7 @@ class ExerciseDetailItem {
       title: json['title']?.toString() ?? '',
       targetArea: json['targetArea']?.toString() ?? '',
       imagePath: json['imagePath']?.toString() ?? 'assets/images/jumping_jacks.jpg',
+      videoUrl: json['videoUrl']?.toString(),
       duration: json['duration']?.toString() ?? '00:30',
       instructions: rawInst.map((e) => e.toString()).toList(),
       keyTips: rawTips.map((e) => e.toString()).toList(),

@@ -140,7 +140,14 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                       const SizedBox(width: 10),
                       _buildCircleActionButton(
                         icon: Icons.tune_rounded,
-                        onTap: widget.onFilterTap,
+                        onTap: widget.onFilterTap ??
+                            () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const CategoryWorkoutsScreen(),
+                                ),
+                              );
+                            },
                       ),
                     ],
                   ),

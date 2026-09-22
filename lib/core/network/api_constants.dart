@@ -5,15 +5,15 @@ class ApiConstants {
   // Configurable base URL
   static String get baseUrl {
     if (kIsWeb) {
-      return 'http://localhost:5001/api/v1';
+      return 'https://strongly.be.greewebsolutions.com/api/v1';
     }
     try {
       if (Platform.isAndroid) {
         // 10.0.2.2 maps to host localhost in Android Emulator
-        return 'http://localhost:5001/api/v1';
+        return 'https://strongly.be.greewebsolutions.com/api/v1';
       }
     } catch (_) {}
-    return 'http://localhost:5001/api/v1';
+    return 'https://strongly.be.greewebsolutions.com/api/v1';
   }
 
   // System & Content

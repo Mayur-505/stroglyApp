@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/workout_detail_models.dart';
 import '../widgets/workout_day_card.dart';
 import 'day_workout_exercises_screen.dart';
@@ -236,21 +237,14 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              data.heroImage.startsWith('http')
-                  ? Image.network(
-                      data.heroImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFF161619),
-                      ),
-                    )
-                  : Image.asset(
-                      data.heroImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFF161619),
-                      ),
-                    ),
+              AppImage(
+                imagePath: data.heroImage,
+                fit: BoxFit.cover,
+                memCacheWidth: 800,
+                errorWidget: Container(
+                  color: const Color(0xFF161619),
+                ),
+              ),
               // Top & bottom gradient overlays
               Container(
                 decoration: BoxDecoration(

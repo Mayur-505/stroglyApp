@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/home_models.dart';
 
 class FeaturedWorkoutCard extends StatelessWidget {
@@ -41,37 +42,22 @@ class FeaturedWorkoutCard extends StatelessWidget {
           children: [
             // Background Image
             Positioned.fill(
-              child: workout.imagePath.startsWith('http')
-                  ? Image.network(
-                      workout.imagePath,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFF1E2616),
-                        child: const Center(
-                          child: Icon(
-                            Icons.fitness_center_rounded,
-                            color: AppColors.primaryLime,
-                            size: 64,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      workout.imagePath,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFF1E2616),
-                        child: const Center(
-                          child: Icon(
-                            Icons.fitness_center_rounded,
-                            color: AppColors.primaryLime,
-                            size: 64,
-                          ),
-                        ),
-                      ),
+              child: AppImage(
+                imagePath: workout.imagePath,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                memCacheWidth: 800,
+                errorWidget: Container(
+                  color: const Color(0xFF1E2616),
+                  child: const Center(
+                    child: Icon(
+                      Icons.fitness_center_rounded,
+                      color: AppColors.primaryLime,
+                      size: 64,
                     ),
+                  ),
+                ),
+              ),
             ),
 
             // Gradient Overlay for contrast

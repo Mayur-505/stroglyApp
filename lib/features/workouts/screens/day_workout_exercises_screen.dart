@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 import 'exercise_preview_screen.dart';
 
@@ -74,6 +76,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
                 .toList();
             _isLoading = false;
           });
+          _precacheExerciseImages();
           return;
         }
       }
@@ -84,6 +87,18 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
         _exercises = [];
         _isLoading = false;
       });
+    }
+  }
+
+  void _precacheExerciseImages() {
+    if (!mounted) return;
+    for (final ex in _exercises) {
+      final path = ex.imagePath.trim();
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        precacheImage(CachedNetworkImageProvider(path), context).catchError((_) {});
+      } else if (path.isNotEmpty) {
+        precacheImage(AssetImage(path), context).catchError((_) {});
+      }
     }
   }
 
@@ -335,27 +350,29 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
                                   ),
                                   clipBehavior: Clip.antiAlias,
                                   padding: const EdgeInsets.all(4.0),
-                                  child: exercise.imagePath.startsWith('http')
-                                      ? Image.network(
-                                          exercise.imagePath,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(
-                                            Icons.fitness_center_rounded,
-                                            color: Color(0xFF141416),
-                                            size: 26,
-                                          ),
-                                        )
-                                      : Image.asset(
-                                          exercise.imagePath,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(
-                                            Icons.fitness_center_rounded,
-                                            color: Color(0xFF141416),
-                                            size: 26,
-                                          ),
+                                  child: AppImage(
+                                    imagePath: exercise.imagePath,
+                                    fit: BoxFit.contain,
+                                    memCacheWidth: 150,
+                                    memCacheHeight: 150,
+                                    placeholder: const Center(
+                                      child: SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF222226)),
                                         ),
+                                      ),
+                                    ),
+                                    errorWidget: const Center(
+                                      child: Icon(
+                                        Icons.fitness_center_rounded,
+                                        color: Color(0xFF141416),
+                                        size: 26,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
 
@@ -419,21 +436,14 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              widget.heroImage.startsWith('http')
-                  ? Image.network(
-                      widget.heroImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFF161619),
-                      ),
-                    )
-                  : Image.asset(
-                      widget.heroImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFF161619),
-                      ),
-                    ),
+              AppImage(
+                imagePath: widget.heroImage,
+                fit: BoxFit.cover,
+                memCacheWidth: 800,
+                errorWidget: Container(
+                  color: const Color(0xFF161619),
+                ),
+              ),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

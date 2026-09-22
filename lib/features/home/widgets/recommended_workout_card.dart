@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/home_models.dart';
 
 class RecommendedWorkoutCard extends StatelessWidget {
@@ -45,35 +46,21 @@ class RecommendedWorkoutCard extends StatelessWidget {
               SizedBox(
                 height: 125,
                 width: double.infinity,
-                child: workout.imagePath.startsWith('http')
-                    ? Image.network(
-                        workout.imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFF222818),
-                          child: const Center(
-                            child: Icon(
-                              Icons.fitness_center_rounded,
-                              color: AppColors.primaryLime,
-                              size: 36,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Image.asset(
-                        workout.imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFF222818),
-                          child: const Center(
-                            child: Icon(
-                              Icons.fitness_center_rounded,
-                              color: AppColors.primaryLime,
-                              size: 36,
-                            ),
-                          ),
-                        ),
+                child: AppImage(
+                  imagePath: workout.imagePath,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 600,
+                  errorWidget: Container(
+                    color: const Color(0xFF222818),
+                    child: const Center(
+                      child: Icon(
+                        Icons.fitness_center_rounded,
+                        color: AppColors.primaryLime,
+                        size: 36,
                       ),
+                    ),
+                  ),
+                ),
               ),
 
               // Details

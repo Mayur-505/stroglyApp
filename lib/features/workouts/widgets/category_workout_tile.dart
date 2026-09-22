@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_image.dart';
 import '../models/category_workout_models.dart';
 
 class CategoryWorkoutTile extends StatelessWidget {
@@ -33,31 +34,20 @@ class CategoryWorkoutTile extends StatelessWidget {
               child: SizedBox(
                 width: 66,
                 height: 66,
-                child: item.imagePath.startsWith('http')
-                    ? Image.network(
-                        item.imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFF1B1B1D),
-                          child: const Icon(
-                            Icons.fitness_center_rounded,
-                            color: Colors.white38,
-                            size: 26,
-                          ),
-                        ),
-                      )
-                    : Image.asset(
-                        item.imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFF1B1B1D),
-                          child: const Icon(
-                            Icons.fitness_center_rounded,
-                            color: Colors.white38,
-                            size: 26,
-                          ),
-                        ),
-                      ),
+                child: AppImage(
+                  imagePath: item.imagePath,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 200,
+                  memCacheHeight: 200,
+                  errorWidget: Container(
+                    color: const Color(0xFF1B1B1D),
+                    child: const Icon(
+                      Icons.fitness_center_rounded,
+                      color: Colors.white38,
+                      size: 26,
+                    ),
+                  ),
+                ),
               ),
             ),
 

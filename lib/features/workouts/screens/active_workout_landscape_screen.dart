@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:video_player/video_player.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
@@ -49,6 +50,11 @@ class _ActiveWorkoutLandscapeScreenState
   int _overallElapsedSeconds = 37;
   Timer? _tickerTimer;
 
+  // Video readiness & preloading
+  bool _isVideoReady = false;
+  VideoPlayerController? _preloadedNextController;
+  String? _preloadedNextUrl;
+
   // Audio/Sound state
   bool _isMuted = false;
 
@@ -83,6 +89,11 @@ class _ActiveWorkoutLandscapeScreenState
         ? _parseDuration(_exercises[_currentIndex].duration)
         : 30;
 
+    final initialEx = _exercises.isNotEmpty ? _exercises[_currentIndex] : null;
+    _isVideoReady = initialEx == null ||
+        initialEx.videoUrl == null ||
+        initialEx.videoUrl!.isEmpty;
+
     // Setup micro-bounce animation for active exercise character
     _animController = AnimationController(
       vsync: this,
@@ -99,6 +110,7 @@ class _ActiveWorkoutLandscapeScreenState
   @override
   void dispose() {
     _tickerTimer?.cancel();
+    _preloadedNextController?.dispose();
     _animController.dispose();
 
     // Restore system UI mode and portrait orientation
@@ -132,6 +144,13 @@ class _ActiveWorkoutLandscapeScreenState
       if (!mounted) return;
 
       if (_currentStep == ActiveWorkoutStep.exercising) {
+        final currentEx = _exercises.isNotEmpty ? _exercises[_currentIndex] : null;
+        final hasVideo = currentEx?.videoUrl != null && currentEx!.videoUrl!.isNotEmpty;
+        if (hasVideo && !_isVideoReady) {
+          // Wait for video to initialize and be ready before counting down!
+          return;
+        }
+
         setState(() {
           _overallElapsedSeconds++;
           if (_exerciseSecondsRemaining > 0) {
@@ -173,6 +192,28 @@ class _ActiveWorkoutLandscapeScreenState
         _currentStep = ActiveWorkoutStep.resting;
         _restSecondsRemaining = 20;
       });
+      _preloadNextVideo();
+    }
+  }
+
+  void _preloadNextVideo() {
+    if (_currentIndex + 1 < _exercises.length) {
+      final nextEx = _exercises[_currentIndex + 1];
+      final nextUrl = nextEx.videoUrl;
+      if (nextUrl != null && nextUrl.isNotEmpty && nextUrl != _preloadedNextUrl) {
+        _preloadedNextController?.dispose();
+        _preloadedNextUrl = nextUrl;
+        _preloadedNextController =
+            VideoPlayerController.networkUrl(Uri.parse(nextUrl));
+        _preloadedNextController!.initialize().then((_) {
+          if (mounted) {
+            _preloadedNextController!.setLooping(true);
+            _preloadedNextController!.setVolume(_isMuted ? 0.0 : 1.0);
+          }
+        }).catchError((e) {
+          debugPrint('Preload video error: $e');
+        });
+      }
     }
   }
 
@@ -183,6 +224,12 @@ class _ActiveWorkoutLandscapeScreenState
         _exerciseSecondsRemaining =
             _parseDuration(_exercises[_currentIndex].duration);
         _currentStep = ActiveWorkoutStep.exercising;
+        final cur = _exercises[_currentIndex];
+        _isVideoReady = cur.videoUrl == null ||
+            cur.videoUrl!.isEmpty ||
+            (_preloadedNextController != null &&
+                _preloadedNextController!.value.isInitialized &&
+                _preloadedNextUrl == cur.videoUrl);
       });
     } else {
       widget.onComplete?.call();
@@ -197,6 +244,8 @@ class _ActiveWorkoutLandscapeScreenState
         _exerciseSecondsRemaining =
             _parseDuration(_exercises[_currentIndex].duration);
         _currentStep = ActiveWorkoutStep.exercising;
+        final cur = _exercises[_currentIndex];
+        _isVideoReady = cur.videoUrl == null || cur.videoUrl!.isEmpty;
       });
     }
   }
@@ -210,6 +259,8 @@ class _ActiveWorkoutLandscapeScreenState
       _exerciseSecondsRemaining =
           _parseDuration(_exercises[_currentIndex].duration);
       _currentStep = ActiveWorkoutStep.exercising;
+      final cur = _exercises[_currentIndex];
+      _isVideoReady = cur.videoUrl == null || cur.videoUrl!.isEmpty;
     });
   }
 
@@ -289,8 +340,27 @@ class _ActiveWorkoutLandscapeScreenState
                     height: MediaQuery.of(context).size.height * 0.65,
                     child: ExerciseVideoPlayer(
                       videoUrl: currentExercise.videoUrl!,
-                      isPlaying: _currentStep == ActiveWorkoutStep.exercising,
+                      posterImagePath: currentExercise.imagePath,
+                      preloadedController: (_preloadedNextUrl == currentExercise.videoUrl)
+                          ? _preloadedNextController
+                          : null,
+                      isPlaying: _currentStep == ActiveWorkoutStep.exercising &&
+                          _isVideoReady,
                       isMuted: _isMuted,
+                      onReady: () {
+                        if (mounted && !_isVideoReady) {
+                          setState(() {
+                            _isVideoReady = true;
+                          });
+                        }
+                      },
+                      onBuffering: (isBuffering) {
+                        if (mounted) {
+                          setState(() {
+                            _isVideoReady = !isBuffering;
+                          });
+                        }
+                      },
                     ),
                   )
                 : ScaleTransition(

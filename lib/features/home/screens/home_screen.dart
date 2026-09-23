@@ -29,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedNavIndex = 0;
   bool _isLoading = true;
 
+  // GlobalKey to trigger Progress refresh when tab is tapped
+  final GlobalKey<ProgressScreenState> _progressScreenKey = GlobalKey<ProgressScreenState>();
+
   WorkoutItem? _featuredWorkout;
   List<WorkoutCategory> _categories = [];
   List<WorkoutItem> _recommendedWorkouts = [];
@@ -115,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildHomeContent(),
             const WorkoutsScreen(),
             ProgressScreen(
+              key: _progressScreenKey,
               onBack: () {
                 setState(() {
                   _selectedNavIndex = 0;
@@ -138,6 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _selectedNavIndex = index;
           });
+          // Progress tab select hone par fresh API call karo
+          if (index == 2) {
+            _progressScreenKey.currentState?.fetchDashboard();
+          }
         },
       ),
     );

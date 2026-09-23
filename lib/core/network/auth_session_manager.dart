@@ -9,16 +9,23 @@ class AuthSessionManager {
   static const String _keyUserId = 'strongly_user_id';
   static const String _keyIsGuest = 'strongly_is_guest';
   static const String _keyUserName = 'strongly_user_name';
+  static const String _keyUserEmail = 'strongly_user_email';
+
+  static const String _keyUserAvatar = 'strongly_user_avatar';
 
   String? _token;
   String? _userId;
   bool _isGuest = false;
   String? _userName;
+  String? _userEmail;
+  String? _userAvatar;
 
   String? get token => _token;
   String? get userId => _userId;
   bool get isGuest => _isGuest;
   String? get userName => _userName;
+  String? get userEmail => _userEmail;
+  String? get userAvatar => _userAvatar;
   bool get isAuthenticated => _token != null && _token!.isNotEmpty;
 
   Future<void> init() async {
@@ -28,6 +35,8 @@ class AuthSessionManager {
       _userId = prefs.getString(_keyUserId);
       _isGuest = prefs.getBool(_keyIsGuest) ?? false;
       _userName = prefs.getString(_keyUserName);
+      _userEmail = prefs.getString(_keyUserEmail);
+      _userAvatar = prefs.getString(_keyUserAvatar);
     } catch (_) {}
   }
 
@@ -36,11 +45,15 @@ class AuthSessionManager {
     required String userId,
     bool isGuest = false,
     String? name,
+    String? email,
+    String? avatar,
   }) async {
     _token = token;
     _userId = userId;
     _isGuest = isGuest;
-    _userName = name;
+    if (name != null) _userName = name;
+    if (email != null) _userEmail = email;
+    if (avatar != null) _userAvatar = avatar;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -50,6 +63,12 @@ class AuthSessionManager {
       if (name != null) {
         await prefs.setString(_keyUserName, name);
       }
+      if (email != null) {
+        await prefs.setString(_keyUserEmail, email);
+      }
+      if (avatar != null) {
+        await prefs.setString(_keyUserAvatar, avatar);
+      }
     } catch (_) {}
   }
 
@@ -58,6 +77,8 @@ class AuthSessionManager {
     _userId = null;
     _isGuest = false;
     _userName = null;
+    _userEmail = null;
+    _userAvatar = null;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -65,6 +86,8 @@ class AuthSessionManager {
       await prefs.remove(_keyUserId);
       await prefs.remove(_keyIsGuest);
       await prefs.remove(_keyUserName);
+      await prefs.remove(_keyUserEmail);
+      await prefs.remove(_keyUserAvatar);
     } catch (_) {}
   }
 }

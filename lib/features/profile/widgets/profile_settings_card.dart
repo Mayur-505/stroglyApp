@@ -40,7 +40,7 @@ class ProfileSettingsCard extends StatelessWidget {
   }
 
   Widget _buildSettingRow(ProfileSettingItem item) {
-    final isDanger = item.id == 'delete_account';
+    final isDanger = item.id == 'delete_account' || item.id == 'logout';
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -82,7 +82,7 @@ class ProfileSettingsCard extends StatelessWidget {
                 style: GoogleFonts.outfit(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isDanger ? const Color(0xFFFF6B6B) : Colors.white,
+                  color: isDanger ? const Color(0xFFFF5B5B) : Colors.white,
                 ),
               ),
             ),
@@ -90,7 +90,7 @@ class ProfileSettingsCard extends StatelessWidget {
             // Chevron Right
             Icon(
               Icons.chevron_right_rounded,
-              color: isDanger ? const Color(0x66FF6B6B) : Colors.white38,
+              color: isDanger ? const Color(0xFFFF5B5B) : Colors.white38,
               size: 20,
             ),
           ],

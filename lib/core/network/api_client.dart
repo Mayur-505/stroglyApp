@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../services/language_service.dart';
 import 'api_constants.dart';
 import 'auth_session_manager.dart';
@@ -20,6 +21,7 @@ class ApiResponse<T> {
   });
 
   bool get isOk => success && statusCode >= 200 && statusCode < 300;
+  String? get error => message;
 
   dynamic operator [](String key) {
     if (key == 'success') return success;
@@ -49,6 +51,7 @@ class ApiClient {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Accept-Language': lang,
+      'ngrok-skip-browser-warning': 'true', // ngrok browser warning skip
     };
 
     if (token != null && token.isNotEmpty) {
@@ -62,14 +65,18 @@ class ApiClient {
     return headers;
   }
 
-  Uri _buildUri(String path, [Map<String, dynamic>? queryParams]) {
+  Uri _buildUri(String path, [Map<String, dynamic>? queryParams, bool includeLang = true]) {
     final base = ApiConstants.baseUrl;
     final fullUrl = '$base$path';
+
+    // Do not append ?lang= query parameter for upload routes or when includeLang is false
+    final shouldIncludeLang = includeLang && !path.contains('/upload');
     final lang = LanguageService.instance.currentLanguage;
 
-    final params = <String, String>{
-      'lang': lang,
-    };
+    final params = <String, String>{};
+    if (shouldIncludeLang) {
+      params['lang'] = lang;
+    }
 
     if (queryParams != null && queryParams.isNotEmpty) {
       queryParams.forEach((key, value) {
@@ -77,6 +84,10 @@ class ApiClient {
           params[key] = value.toString();
         }
       });
+    }
+
+    if (params.isEmpty) {
+      return Uri.parse(fullUrl);
     }
 
     return Uri.parse(fullUrl).replace(queryParameters: params);
@@ -177,6 +188,81 @@ class ApiClient {
     }
   }
 
+  // POST Multipart (File Upload)
+  Future<ApiResponse<dynamic>> postMultipart(
+    String path, {
+    required String fileField,
+    required List<int> bytes,
+    required String filename,
+    String? mimeType,
+    Map<String, String>? fields,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final uri = _buildUri(path, null, false);
+      final request = http.MultipartRequest('POST', uri);
+
+      final reqHeaders = _buildHeaders(headers);
+      reqHeaders.remove('Content-Type');
+      request.headers.addAll(reqHeaders);
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      String validFilename = filename;
+      String ext = '';
+      if (validFilename.contains('.')) {
+        ext = validFilename.split('.').last.toLowerCase();
+      }
+
+      final allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+      if (ext.isEmpty || !allowedExts.contains(ext)) {
+        validFilename = '${validFilename.split('.').first}.jpg';
+        ext = 'jpg';
+      }
+
+      MediaType? parsedContentType;
+      if (mimeType != null && mimeType.startsWith('image/')) {
+        try {
+          parsedContentType = MediaType.parse(mimeType);
+        } catch (_) {}
+      }
+
+      if (parsedContentType == null) {
+        if (ext == 'png') {
+          parsedContentType = MediaType('image', 'png');
+        } else if (ext == 'webp') {
+          parsedContentType = MediaType('image', 'webp');
+        } else if (ext == 'gif') {
+          parsedContentType = MediaType('image', 'gif');
+        } else {
+          parsedContentType = MediaType('image', 'jpeg');
+        }
+      }
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fileField,
+          bytes,
+          filename: validFilename,
+          contentType: parsedContentType,
+        ),
+      );
+
+      final streamedResponse = await request.send().timeout(_timeout);
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('[ApiClient] POST Multipart $path error: $e');
+      return ApiResponse(
+        success: false,
+        message: e.toString(),
+        statusCode: 500,
+      );
+    }
+  }
+
   ApiResponse<dynamic> _handleResponse(http.Response response) {
     try {
       final decoded = jsonDecode(response.body);
@@ -184,7 +270,7 @@ class ApiClient {
         return ApiResponse(
           success: decoded['success'] == true,
           message: decoded['message']?.toString(),
-          data: decoded['data'],
+          data: decoded['data'] ?? decoded,
           statusCode: response.statusCode,
         );
       }

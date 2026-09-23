@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/services/language_service.dart';
-import 'google_icon.dart';
+import '../../../core/constants/app_colors.dart';
 
 class BackupRestoreCard extends StatelessWidget {
-  final VoidCallback? onGoogleTap;
+  final VoidCallback? onLoginTap;
+  final VoidCallback? onSignInTap;
 
   const BackupRestoreCard({
     super.key,
-    this.onGoogleTap,
+    this.onLoginTap,
+    this.onSignInTap,
   });
 
   @override
@@ -26,9 +27,9 @@ class BackupRestoreCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
+          // Title: Backup & Restore
           Text(
-            LanguageService.tr('backup_restore'),
+            'Backup & Restore',
             style: GoogleFonts.outfit(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -37,7 +38,7 @@ class BackupRestoreCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
 
-          // Subtitle
+          // Subtitle: Synchronize your data
           Text(
             'Synchronize your data',
             style: GoogleFonts.outfit(
@@ -48,36 +49,64 @@ class BackupRestoreCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Google Button
-          GestureDetector(
-            onTap: onGoogleTap,
-            child: Container(
-              width: double.infinity,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F23),
-                borderRadius: BorderRadius.circular(14.0),
-                border: Border.all(
-                  color: const Color(0xFF3A3A42),
-                  width: 1.0,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const GoogleLogoWidget(size: 20),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Google',
-                    style: GoogleFonts.outfit(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+          // Row of 2 Buttons: [Log In] and [Sign In]
+          Row(
+            children: [
+              // Log In Button (Lime Solid)
+              Expanded(
+                child: SizedBox(
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryLime,
+                      foregroundColor: const Color(0xFF111113),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                    ),
+                    onPressed: onLoginTap,
+                    child: Text(
+                      'Log In',
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+
+              // Sign In Button (Dark Gray)
+              Expanded(
+                child: SizedBox(
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF38383B),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                    onPressed: onSignInTap,
+                    child: Text(
+                      'Sign In',
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

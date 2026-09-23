@@ -5,15 +5,15 @@ class ApiConstants {
   // Configurable base URL
   static String get baseUrl {
     if (kIsWeb) {
-      return 'https://strongly.be.greewebsolutions.com/api/v1';
+      return 'https://luminance-last-sizzle.ngrok-free.dev/api/v1';
     }
     try {
       if (Platform.isAndroid) {
         // 10.0.2.2 maps to host localhost in Android Emulator
-        return 'https://strongly.be.greewebsolutions.com/api/v1';
+        return 'https://luminance-last-sizzle.ngrok-free.dev/api/v1';
       }
     } catch (_) {}
-    return 'https://strongly.be.greewebsolutions.com/api/v1';
+    return 'https://luminance-last-sizzle.ngrok-free.dev/api/v1';
   }
 
   // System & Content
@@ -22,14 +22,21 @@ class ApiConstants {
   // Auth
   static const String guestLogin = '/auth/guest';
   static const String googleLogin = '/auth/google';
+  static const String signup = '/auth/signup';
+  static const String login = '/auth/login';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String resendOtp = '/auth/resend-otp';
+  static const String otpVerify = '/auth/otp-verify';
+  static const String resetPassword = '/auth/reset-password';
   static const String me = '/auth/me';
   static const String logout = '/auth/logout';
 
-  // User Profile
+  // User Profile & Upload
   static const String questionnaire = '/user/questionnaire';
   static const String updateLanguage = '/user/language';
   static const String backup = '/user/backup';
   static const String restore = '/user/restore';
+  static const String uploadPhoto = '/upload/photo';
 
   // Home & Feed
   static const String homeFeed = '/home/feed';

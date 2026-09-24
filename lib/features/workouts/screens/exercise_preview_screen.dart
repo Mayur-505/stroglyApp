@@ -13,7 +13,7 @@ class ExercisePreviewScreen extends StatefulWidget {
   final List<ExerciseDetailItem>? exercises;
   final String? planId;
   final VoidCallback? onStart;
-  final VoidCallback? onComplete;
+  final ValueChanged<int>? onComplete;
 
   const ExercisePreviewScreen({
     super.key,
@@ -320,8 +320,8 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
                           workoutTitle: widget.workoutTitle,
                           initialExerciseIndex: _currentIndex,
                           exercises: _exercises,
-                          onComplete: () {
-                            widget.onComplete?.call();
+                          onComplete: (elapsedSeconds) {
+                            widget.onComplete?.call(elapsedSeconds);
                           },
                         ),
                       ),

@@ -133,4 +133,8 @@ const Map<String, String> hiTranslations = {
   'where_to_train': 'कहाँ कसरत करनी है',
   'in_the_gym': 'जिम में',
   'at_home': 'घर पर',
+
+  // Empty State
+  'no_workout_history': 'कोई वर्कआउट इतिहास नहीं मिला',
+  'no_workout_history_desc': 'अपनी प्रगति देखने के लिए वर्कआउट पूरा करें',
 };

@@ -68,13 +68,15 @@ class ApiClient {
   Uri _buildUri(String path, [Map<String, dynamic>? queryParams, bool includeLang = true]) {
     final base = ApiConstants.baseUrl;
     final fullUrl = '$base$path';
+    final parsedUri = Uri.parse(fullUrl);
 
     // Do not append ?lang= query parameter for upload routes or when includeLang is false
     final shouldIncludeLang = includeLang && !path.contains('/upload');
     final lang = LanguageService.instance.currentLanguage;
 
-    final params = <String, String>{};
-    if (shouldIncludeLang) {
+    final params = Map<String, String>.from(parsedUri.queryParameters);
+
+    if (shouldIncludeLang && !params.containsKey('lang')) {
       params['lang'] = lang;
     }
 
@@ -86,11 +88,7 @@ class ApiClient {
       });
     }
 
-    if (params.isEmpty) {
-      return Uri.parse(fullUrl);
-    }
-
-    return Uri.parse(fullUrl).replace(queryParameters: params);
+    return parsedUri.replace(queryParameters: params);
   }
 
   // GET

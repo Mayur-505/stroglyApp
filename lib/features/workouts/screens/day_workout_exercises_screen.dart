@@ -138,18 +138,22 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
 
   static final Set<String> _submittedKeys = {};
 
-  Future<void> _submitDayCompletion() async {
+  Future<void> _submitDayCompletion(int elapsedSeconds) async {
     final plan = widget.planId ?? 'full_body_burn';
     final key = '${plan}_day_${widget.dayNumber}';
     if (_submittedKeys.contains(key)) return;
     _submittedKeys.add(key);
 
+    final actualSeconds = elapsedSeconds > 0 ? elapsedSeconds : 600;
+    final calculatedCalories = (actualSeconds / 60.0 * 8.5).round();
+    final calories = calculatedCalories > 0 ? calculatedCalories : 85;
+
     try {
       await ApiClient.instance.post(
         '/plans/$plan/days/${widget.dayNumber}/complete',
         {
-          'durationSeconds': 600,
-          'caloriesBurned': 85,
+          'durationSeconds': actualSeconds,
+          'caloriesBurned': calories,
         },
       );
     } catch (_) {}
@@ -199,7 +203,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
               GestureDetector(
                 onTap: () async {
                   Navigator.of(ctx).pop();
-                  await _submitDayCompletion();
+                  await _submitDayCompletion(0);
                   widget.onComplete?.call();
                   if (mounted) {
                     Navigator.of(context).pop();
@@ -257,8 +261,8 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
               widget.onStart?.call();
             }
           },
-          onComplete: () async {
-            await _submitDayCompletion();
+          onComplete: (elapsedSeconds) async {
+            await _submitDayCompletion(elapsedSeconds);
             widget.onComplete?.call();
             if (mounted) {
               Navigator.of(context).pop();

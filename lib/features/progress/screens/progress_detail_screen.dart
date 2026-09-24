@@ -23,6 +23,9 @@ class ProgressDetailScreen extends StatefulWidget {
 class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
   late ProgressTabType _currentTab;
   String _month = 'September 2026';
+  DateTime _currentMonthDate = DateTime.now();
+  int? _selectedDay;
+  Set<int> _completedDays = {};
   List<WorkoutHistoryLogItem> _historyLogs = [];
   WeeklyActivityChartData? _workoutChart;
 
@@ -46,25 +49,47 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
     }
   }
 
-  Future<void> _fetchHistory() async {
+  // Fetch history — accepts explicit [selectedDay] so we never rely on
+  // reading _selectedDay after setState (avoids race condition).
+  // Adds _t timestamp to bust browser cache and prevent 304 Not Modified.
+  Future<void> _fetchHistory({int? selectedDay, bool hasExplicitDay = false, bool skipDashboard = false}) async {
     try {
-      final res = await ApiClient.instance.get('/progress/history');
+      final effectiveDay = hasExplicitDay ? selectedDay : (selectedDay ?? _selectedDay);
+      final lang = LanguageService.instance.currentLanguage;
+      final year = _currentMonthDate.year;
+      final month = _currentMonthDate.month;
+      final ts = DateTime.now().millisecondsSinceEpoch;
+
+      String path = '/progress/history?lang=$lang&year=$year&month=$month&_t=$ts';
+      if (effectiveDay != null) {
+        final dayStr = effectiveDay.toString().padLeft(2, '0');
+        final monthStr = month.toString().padLeft(2, '0');
+        path += '&date=$year-$monthStr-$dayStr';
+      }
+
+      final res = await ApiClient.instance.get(path);
       if (res.isOk && res.data != null) {
         final data = res.data as Map<String, dynamic>;
         _month = data['month']?.toString() ?? 'September 2026';
+
+        final rawCompleted = data['completedDays'] as List<dynamic>? ?? [];
+        _completedDays = rawCompleted.map((e) => (e as num).toInt()).toSet();
+
         final rawLogs = data['workoutHistoryLogs'] as List<dynamic>? ?? [];
         _historyLogs = rawLogs
             .map((e) => WorkoutHistoryLogItem.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList();
       }
 
-      final dashRes = await ApiClient.instance.get('/progress/dashboard');
-      if (dashRes.isOk && dashRes.data != null) {
-        final charts = dashRes.data['charts'] as Map<String, dynamic>? ?? {};
-        if (charts['workoutChart'] != null) {
-          _workoutChart = WeeklyActivityChartData.fromJson(
-            Map<String, dynamic>.from(charts['workoutChart'] as Map),
-          );
+      if (!skipDashboard) {
+        final dashRes = await ApiClient.instance.get('/progress/dashboard');
+        if (dashRes.isOk && dashRes.data != null) {
+          final charts = dashRes.data['charts'] as Map<String, dynamic>? ?? {};
+          if (charts['workoutChart'] != null) {
+            _workoutChart = WeeklyActivityChartData.fromJson(
+              Map<String, dynamic>.from(charts['workoutChart'] as Map),
+            );
+          }
         }
       }
 
@@ -72,6 +97,33 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
         setState(() {});
       }
     } catch (_) {}
+  }
+
+  void _onPreviousMonth() {
+    setState(() {
+      _currentMonthDate = DateTime(_currentMonthDate.year, _currentMonthDate.month - 1, 1);
+      _selectedDay = null;
+    });
+    _fetchHistory(selectedDay: null, hasExplicitDay: true);
+  }
+
+  void _onNextMonth() {
+    setState(() {
+      _currentMonthDate = DateTime(_currentMonthDate.year, _currentMonthDate.month + 1, 1);
+      _selectedDay = null;
+    });
+    _fetchHistory(selectedDay: null, hasExplicitDay: true);
+  }
+
+  void _onDaySelected(MonthlyCalendarDay day) {
+    if (!day.isCurrentMonth) return;
+    // Compute new value BEFORE setState so we can pass it directly to fetch
+    final int? newDay = (_selectedDay == day.dayNumber) ? null : day.dayNumber;
+    setState(() {
+      _selectedDay = newDay;
+    });
+    // Pass newDay explicitly — never reads _selectedDay after setState
+    _fetchHistory(selectedDay: newDay, hasExplicitDay: true, skipDashboard: true);
   }
 
   @override
@@ -156,7 +208,7 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
       children: [
         // Section Header
         Text(
-          'August 2026',
+          _month,
           style: GoogleFonts.outfit(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -175,18 +227,27 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
   }
 
   Widget _buildHistoryContent() {
+    final String sectionTitle = _selectedDay != null
+        ? '$_month (Day $_selectedDay)'
+        : _month;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Monthly Calendar Card
         MonthlyCalendarCard(
           monthTitle: _month,
+          completedDays: _completedDays,
+          selectedDay: _selectedDay,
+          onPreviousMonth: _onPreviousMonth,
+          onNextMonth: _onNextMonth,
+          onDaySelected: _onDaySelected,
         ),
         const SizedBox(height: 22),
 
         // Section Header
         Text(
-          'August 2026',
+          sectionTitle,
           style: GoogleFonts.outfit(
             fontSize: 12,
             fontWeight: FontWeight.w500,

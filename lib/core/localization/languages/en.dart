@@ -133,4 +133,8 @@ const Map<String, String> enTranslations = {
   'where_to_train': 'Where to train',
   'in_the_gym': 'In the gym',
   'at_home': 'At home',
+
+  // Empty State
+  'no_workout_history': 'No workout history found',
+  'no_workout_history_desc': 'Complete a workout to see your progress here',
 };

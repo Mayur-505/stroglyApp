@@ -21,7 +21,7 @@ class ActiveWorkoutLandscapeScreen extends StatefulWidget {
   final String workoutTitle;
   final int initialExerciseIndex;
   final List<ExerciseDetailItem>? exercises;
-  final VoidCallback? onComplete;
+  final ValueChanged<int>? onComplete;
 
   const ActiveWorkoutLandscapeScreen({
     super.key,
@@ -47,7 +47,7 @@ class _ActiveWorkoutLandscapeScreenState
   // Timers & Counters
   int _exerciseSecondsRemaining = 30;
   int _restSecondsRemaining = 20;
-  int _overallElapsedSeconds = 37;
+  int _overallElapsedSeconds = 0;
   Timer? _tickerTimer;
 
   // Video readiness & preloading
@@ -188,7 +188,7 @@ class _ActiveWorkoutLandscapeScreenState
     if (_currentIndex >= _exercises.length - 1) {
       // Finished all exercises - cancel timer immediately to prevent duplicate completion calls!
       _tickerTimer?.cancel();
-      widget.onComplete?.call();
+      widget.onComplete?.call(_overallElapsedSeconds);
       _exitToPortrait();
     } else {
       // Transition to Rest / Next screen
@@ -236,7 +236,7 @@ class _ActiveWorkoutLandscapeScreenState
                 _preloadedNextUrl == cur.videoUrl);
       });
     } else {
-      widget.onComplete?.call();
+      widget.onComplete?.call(_overallElapsedSeconds);
       _exitToPortrait();
     }
   }

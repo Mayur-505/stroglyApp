@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/services/language_service.dart';
 import '../models/progress_models.dart';
 
 class WorkoutHistoryCard extends StatelessWidget {
@@ -94,17 +95,60 @@ class WorkoutHistoryCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Workout Logs List
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: logs.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final item = logs[index];
-              return _buildLogItem(item);
-            },
-          ),
+          // Workout Logs List or Empty State
+          logs.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.04),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.fitness_center_rounded,
+                            size: 26,
+                            color: Colors.white38,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          LanguageService.tr('no_workout_history'),
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white70,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          LanguageService.tr('no_workout_history_desc'),
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white38,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: logs.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final item = logs[index];
+                    return _buildLogItem(item);
+                  },
+                ),
         ],
       ),
     );
@@ -121,18 +165,15 @@ class WorkoutHistoryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                item.title,
-                style: GoogleFonts.outfit(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+              Expanded(
+                child: Text(
+                  item.title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.more_horiz_rounded,
-                color: Colors.white38,
-                size: 20,
               ),
             ],
           ),

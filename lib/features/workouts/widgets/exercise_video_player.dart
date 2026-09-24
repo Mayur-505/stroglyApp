@@ -186,13 +186,19 @@ class _ExerciseVideoPlayerState extends State<ExerciseVideoPlayer> {
       );
     }
 
+    final double aspect = (_controller != null &&
+            _controller!.value.isInitialized &&
+            _controller!.value.aspectRatio > 0)
+        ? _controller!.value.aspectRatio
+        : (16 / 9);
+
     return Stack(
       alignment: Alignment.center,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: AspectRatio(
-            aspectRatio: _controller!.value.aspectRatio,
+            aspectRatio: aspect,
             child: VideoPlayer(_controller!),
           ),
         ),

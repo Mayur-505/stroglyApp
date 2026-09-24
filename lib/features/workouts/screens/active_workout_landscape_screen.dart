@@ -66,14 +66,16 @@ class _ActiveWorkoutLandscapeScreenState
   void initState() {
     super.initState();
 
-    // Enable immersive full-screen mode (hides status bar & navigation bar)
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-    // Lock to horizontal/landscape orientation
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    // Enable immersive full-screen mode & landscape orientation safely after frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+      }
+    });
 
     if (widget.exercises != null && widget.exercises!.isNotEmpty) {
       _exercises = List<ExerciseDetailItem>.from(widget.exercises!);
@@ -117,6 +119,7 @@ class _ActiveWorkoutLandscapeScreenState
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
     ]);
 
     super.dispose();
@@ -183,7 +186,8 @@ class _ActiveWorkoutLandscapeScreenState
     }
 
     if (_currentIndex >= _exercises.length - 1) {
-      // Finished all exercises
+      // Finished all exercises - cancel timer immediately to prevent duplicate completion calls!
+      _tickerTimer?.cancel();
       widget.onComplete?.call();
       _exitToPortrait();
     } else {
@@ -268,8 +272,11 @@ class _ActiveWorkoutLandscapeScreenState
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
     ]);
-    Navigator.of(context).pop();
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -280,6 +287,7 @@ class _ActiveWorkoutLandscapeScreenState
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         SystemChrome.setPreferredOrientations([
           DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
         ]);
       },
       child: Scaffold(

@@ -313,6 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 28),
 
+              /*
               // Or Divider
               Row(
                 children: [
@@ -395,6 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 36),
+              */
 
               // Don't have an account? Sign up Footer
               Row(

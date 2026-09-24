@@ -41,6 +41,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
   late bool _inProgress;
   List<ExerciseDetailItem> _exercises = [];
   bool _isLoading = true;
+  bool _isSubmittingComplete = false;
 
   @override
   void initState() {
@@ -135,6 +136,25 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
     _openExerciseDetail(0);
   }
 
+  static final Set<String> _submittedKeys = {};
+
+  Future<void> _submitDayCompletion() async {
+    final plan = widget.planId ?? 'full_body_burn';
+    final key = '${plan}_day_${widget.dayNumber}';
+    if (_submittedKeys.contains(key)) return;
+    _submittedKeys.add(key);
+
+    try {
+      await ApiClient.instance.post(
+        '/plans/$plan/days/${widget.dayNumber}/complete',
+        {
+          'durationSeconds': 600,
+          'caloriesBurned': 85,
+        },
+      );
+    } catch (_) {}
+  }
+
   void _showFinishDialog() {
     showModalBottomSheet(
       context: context,
@@ -179,16 +199,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
               GestureDetector(
                 onTap: () async {
                   Navigator.of(ctx).pop();
-                  final plan = widget.planId ?? 'full_body_burn';
-                  try {
-                    await ApiClient.instance.post(
-                      '/plans/$plan/days/${widget.dayNumber}/complete',
-                      {
-                        'durationSeconds': 600,
-                        'caloriesBurned': 85,
-                      },
-                    );
-                  } catch (_) {}
+                  await _submitDayCompletion();
                   widget.onComplete?.call();
                   if (mounted) {
                     Navigator.of(context).pop();
@@ -247,16 +258,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
             }
           },
           onComplete: () async {
-            final plan = widget.planId ?? 'full_body_burn';
-            try {
-              await ApiClient.instance.post(
-                '/plans/$plan/days/${widget.dayNumber}/complete',
-                {
-                  'durationSeconds': 600,
-                  'caloriesBurned': 85,
-                },
-              );
-            } catch (_) {}
+            await _submitDayCompletion();
             widget.onComplete?.call();
             if (mounted) {
               Navigator.of(context).pop();

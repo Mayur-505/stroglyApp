@@ -6,6 +6,7 @@ import '../../../core/network/api_constants.dart';
 import '../models/category_workout_models.dart';
 import '../widgets/category_workout_tile.dart';
 import '../widgets/workout_customization_flow_sheet.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class WorkoutSearchScreen extends StatefulWidget {
   const WorkoutSearchScreen({super.key});
@@ -111,6 +112,7 @@ class _WorkoutSearchScreenState extends State<WorkoutSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'search'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: SafeArea(
         child: Padding(

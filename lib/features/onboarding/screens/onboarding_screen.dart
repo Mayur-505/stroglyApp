@@ -7,6 +7,7 @@ import '../../../core/services/language_service.dart';
 import '../models/onboarding_item.dart';
 import '../widgets/onboarding_indicator.dart';
 import '../../language/screens/language_selection_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -100,6 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final bottomOverlayHeight = size.height * 0.44;
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'onboarding'),
       backgroundColor: AppColors.backgroundBlack,
       body: Stack(
         fit: StackFit.expand,

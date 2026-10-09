@@ -16,6 +16,7 @@ import '../widgets/home_bottom_nav_bar.dart';
 import '../widgets/home_top_bar.dart';
 import '../widgets/quick_categories_section.dart';
 import '../widgets/recommended_workout_card.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -258,6 +259,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+            const AdPlacement(
+              screen: 'home',
+              padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+            ),
             if (_categories.isNotEmpty) ...[
               const SizedBox(height: 24),
               QuickCategoriesSection(

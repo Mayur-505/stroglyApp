@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_image.dart';
+import '../../../core/ads/ads_manager.dart';
 import '../models/exercise_detail_models.dart';
 import '../widgets/exercise_video_player.dart';
 
@@ -65,6 +66,8 @@ class _ActiveWorkoutLandscapeScreenState
   @override
   void initState() {
     super.initState();
+    // No interstitial / app-open ads while the workout is running.
+    AdsManager.instance.beginQuietZone('active_workout');
 
     // Enable immersive full-screen mode & landscape orientation safely after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,6 +114,7 @@ class _ActiveWorkoutLandscapeScreenState
 
   @override
   void dispose() {
+    AdsManager.instance.endQuietZone('active_workout');
     _tickerTimer?.cancel();
     _preloadedNextController?.dispose();
     _animController.dispose();

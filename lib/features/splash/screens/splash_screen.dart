@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/ads/ads_manager.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -75,6 +76,10 @@ class _SplashScreenState extends State<SplashScreen>
     _navTimer = Timer(const Duration(milliseconds: 2800), () async {
       if (!mounted) return;
       final isCompleted = await PreferenceService.isOnboardingCompleted();
+      if (!mounted) return;
+      // App-open (or interstitial) ad per `appopen_mode`. Returns
+      // immediately when there is nothing to show; never waits > 4s.
+      await AdsManager.instance.appOpen.showOnSplash();
       if (!mounted) return;
 
       final Widget destination =

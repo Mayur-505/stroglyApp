@@ -8,10 +8,14 @@ class WorkoutUnlockSheet extends StatelessWidget {
   final CategoryWorkoutItem workout;
   final VoidCallback onUnlocked;
 
+  /// "Watch video" action (rewarded ad). Falls back to [onUnlocked].
+  final VoidCallback? onWatchVideo;
+
   const WorkoutUnlockSheet({
     super.key,
     required this.workout,
     required this.onUnlocked,
+    this.onWatchVideo,
   });
 
   @override
@@ -135,7 +139,7 @@ class WorkoutUnlockSheet extends StatelessWidget {
 
           // Watch Video Button
           GestureDetector(
-            onTap: onUnlocked,
+            onTap: onWatchVideo ?? onUnlocked,
             child: Container(
               width: double.infinity,
               height: 52,

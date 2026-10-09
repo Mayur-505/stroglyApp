@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 import 'active_workout_landscape_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class ExercisePreviewScreen extends StatefulWidget {
   final int dayNumber;
@@ -90,6 +91,7 @@ class _ExercisePreviewScreenState extends State<ExercisePreviewScreen> {
     final currentExercise = _exercises[_currentIndex];
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'exercise_preview'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: SafeArea(
         child: Column(

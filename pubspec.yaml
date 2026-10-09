@@ -42,6 +42,9 @@ dependencies:
   video_player: ^2.14.0
   cached_network_image: ^4.0.0
   image_picker: ^1.1.2
+  firebase_core: ^4.15.0
+  firebase_remote_config: ^6.7.0
+  google_mobile_ads: ^9.1.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +75,7 @@ flutter:
     - assets/images/image 7 (1).png
     - assets/images/image 7.png
     - assets/images/jumping_jacks.jpg
+    - firebase/remote_config_template.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

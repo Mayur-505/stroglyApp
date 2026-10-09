@@ -6,6 +6,19 @@
 	<string>Strongly needs access to your photo library to select a profile picture.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Strongly needs access to your camera to take a profile picture.</string>
+	<!-- TODO: replace with the iOS AdMob App ID once an iOS app exists in AdMob.
+	     This is Google's sample iOS App ID (test ads only). -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to deliver more relevant ads to you.</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

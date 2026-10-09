@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "922853512120",
+    "project_id": "strongly-4771a",
+    "storage_bucket": "strongly-4771a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922853512120:android:35861252a7ecabc53b754d",
+        "android_client_info": {
+          "package_name": "com.strongly.strongly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4GvTkzqnYyFa2n_CKvvSJIPZvi3o5meo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

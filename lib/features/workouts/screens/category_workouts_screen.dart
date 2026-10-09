@@ -8,6 +8,9 @@ import '../models/category_workout_models.dart';
 import '../widgets/category_workout_tile.dart';
 import '../widgets/workout_customization_flow_sheet.dart';
 import '../widgets/workout_unlock_sheet.dart';
+import '../../../core/ads/ads_manager.dart';
+import '../../../core/ads/rewarded_ad_manager.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class CategoryWorkoutsScreen extends StatefulWidget {
   final String? initialCategory;
@@ -143,6 +146,7 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'category'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: SafeArea(
         child: Column(
@@ -279,10 +283,9 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
                                     context: context,
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
-                                    builder: (context) => WorkoutUnlockSheet(
-                                      workout: workout,
-                                      onUnlocked: () {
-                                        Navigator.of(context).pop();
+                                    builder: (sheetContext) {
+                                      void unlock() {
+                                        Navigator.of(sheetContext).pop();
                                         final unlockedItem = workout.copyWith(isFree: true);
                                         setState(() {
                                           _workouts[index] = unlockedItem;
@@ -295,8 +298,31 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
                                             workout: unlockedItem,
                                           ),
                                         );
-                                      },
-                                    ),
+                                      }
+
+                                      return WorkoutUnlockSheet(
+                                        workout: workout,
+                                        onUnlocked: unlock,
+                                        onWatchVideo: () async {
+                                          final outcome =
+                                              await AdsManager.instance.rewarded.show();
+                                          if (!sheetContext.mounted) return;
+                                          if (outcome == RewardOutcome.skipped) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Watch the full video to unlock this workout.',
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          // Earned, or no ad available: never
+                                          // block the user on a missing ad.
+                                          unlock();
+                                        },
+                                      );
+                                    },
                                   );
                                 } else {
                                   showModalBottomSheet(

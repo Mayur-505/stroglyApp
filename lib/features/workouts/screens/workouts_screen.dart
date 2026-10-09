@@ -9,6 +9,7 @@ import '../widgets/need_workout_card.dart';
 import '../widgets/target_focus_card.dart';
 import 'category_workouts_screen.dart';
 import 'workout_search_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class WorkoutsScreen extends StatefulWidget {
   final VoidCallback? onSearchTap;
@@ -311,6 +312,10 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 ),
               ),
             ],
+            const AdPlacement(
+              screen: 'workouts',
+              padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+            ),
           ],
         ),
       ),

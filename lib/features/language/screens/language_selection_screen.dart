@@ -6,6 +6,7 @@ import '../../gender_selection/screens/gender_selection_screen.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_constants.dart';
 import '../models/language_item.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
   final bool isFromSettings;
@@ -81,6 +82,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'language'),
       backgroundColor: AppColors.backgroundBlack,
       body: SafeArea(
         child: Column(

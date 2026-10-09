@@ -8,6 +8,7 @@ import '../widgets/steps_gauge_card.dart';
 import '../widgets/weekly_bar_chart_card.dart';
 import '../widgets/weekly_calendar_card.dart';
 import 'progress_detail_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class ProgressScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -281,9 +282,14 @@ class ProgressScreenState extends State<ProgressScreen> {
             const SizedBox(height: 14),
 
             // 4. Calorie Weekly Chart Card
-            WeeklyBarChartCard(
-              chartData: _calorieChart ?? _buildDefaultChart('Calories', '0 Calories'),
-              onTap: () => _navigateToDetail(context, ProgressTabType.summary),
+            if (_calorieChart != null)
+              WeeklyBarChartCard(
+                chartData: _calorieChart!,
+                onTap: () => _navigateToDetail(context, ProgressTabType.summary),
+              ),
+            const AdPlacement(
+              screen: 'progress',
+              padding: EdgeInsets.only(top: 14),
             ),
           ],
         ),

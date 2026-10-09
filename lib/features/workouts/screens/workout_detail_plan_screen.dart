@@ -8,6 +8,7 @@ import '../models/workout_detail_models.dart';
 import '../widgets/workout_day_card.dart';
 import 'day_workout_exercises_screen.dart';
 import 'workout_start_schedule_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class WorkoutDetailPlanScreen extends StatefulWidget {
   final String? planId;
@@ -109,6 +110,7 @@ class _WorkoutDetailPlanScreenState extends State<WorkoutDetailPlanScreen> {
     final detail = _detailData!;
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'plan'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: Stack(
         children: [

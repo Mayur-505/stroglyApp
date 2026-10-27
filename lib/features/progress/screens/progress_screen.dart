@@ -7,6 +7,8 @@ import '../widgets/progress_stat_card.dart';
 import '../widgets/steps_gauge_card.dart';
 import '../widgets/weekly_bar_chart_card.dart';
 import '../widgets/weekly_calendar_card.dart';
+import '../../profile/screens/go_premium_screen.dart';
+import '../widgets/premium_lock_overlay.dart';
 import 'progress_detail_screen.dart';
 import '../../../core/ads/widgets/ad_placement.dart';
 
@@ -31,6 +33,12 @@ class ProgressScreenState extends State<ProgressScreen> {
   int _targetSteps = 6000;
   WeeklyActivityChartData? _workoutChart;
   WeeklyActivityChartData? _calorieChart;
+  bool _chartsLocked = false;
+
+  Future<void> _unlockCharts() async {
+    final isPremium = await GoPremiumScreen.open(context);
+    if (isPremium) _fetchDashboard();
+  }
 
   @override
   void initState() {
@@ -68,6 +76,7 @@ class ProgressScreenState extends State<ProgressScreen> {
 
       if (mounted) {
         setState(() {
+          _chartsLocked = data['chartsLocked'] == true;
           _weekDays = rawDays.isNotEmpty
               ? rawDays
                   .map((e) => DayStatusItem.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -274,19 +283,27 @@ class ProgressScreenState extends State<ProgressScreen> {
             const SizedBox(height: 14),
 
             // 3. Workout Weekly Chart Card
-            WeeklyBarChartCard(
-              chartData: _workoutChart ?? _buildDefaultChart('Workout', '0 min'),
-              onTap: () => _navigateToDetail(context, ProgressTabType.summary),
+            PremiumLockOverlay(
+              locked: _chartsLocked,
+              onUnlock: _unlockCharts,
+              child: WeeklyBarChartCard(
+                chartData: _workoutChart ?? _buildDefaultChart('Workout', '0 min'),
+                onTap: () => _navigateToDetail(context, ProgressTabType.summary),
+              ),
             ),
 
             const SizedBox(height: 14),
 
             // 4. Calorie Weekly Chart Card
-            if (_calorieChart != null)
-              WeeklyBarChartCard(
-                chartData: _calorieChart!,
+            PremiumLockOverlay(
+              locked: _chartsLocked,
+              onUnlock: _unlockCharts,
+              child: WeeklyBarChartCard(
+                chartData: _calorieChart ?? _buildDefaultChart('Calories', '0 Calories'),
                 onTap: () => _navigateToDetail(context, ProgressTabType.summary),
               ),
+            ),
+
             const AdPlacement(
               screen: 'progress',
               padding: EdgeInsets.only(top: 14),

@@ -5,6 +5,8 @@ import '../../../core/ads/ads_manager.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/premium_service.dart';
+import '../../profile/screens/go_premium_screen.dart';
 import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 import 'exercise_preview_screen.dart';
@@ -70,6 +72,19 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
     try {
       final plan = widget.planId ?? 'full_body_burn';
       final response = await ApiClient.instance.get('/plans/$plan/days/${widget.dayNumber}');
+
+      // Premium plan opened by a free user: show paywall, retry after purchase or leave
+      if (PremiumService.isPremiumRequired(response) && mounted) {
+        final isPremium = await GoPremiumScreen.open(context);
+        if (!mounted) return;
+        if (isPremium) {
+          _fetchDayExercises();
+        } else {
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+
       if (response.isOk && response.data != null) {
         final rawList = response['data']['exercises'] as List<dynamic>? ?? [];
         if (mounted) {

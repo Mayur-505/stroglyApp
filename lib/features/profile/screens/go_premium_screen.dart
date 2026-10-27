@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/premium_service.dart';
+
 class GoPremiumScreen extends StatefulWidget {
   final VoidCallback? onClose;
 
@@ -11,28 +14,55 @@ class GoPremiumScreen extends StatefulWidget {
     this.onClose,
   });
 
+  /// Opens the paywall. Returns true if the user is premium when it closes.
+  static Future<bool> open(BuildContext context) async {
+    if (PremiumService.instance.isPremium) return true;
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const GoPremiumScreen()),
+    );
+    return PremiumService.instance.isPremium;
+  }
+
   @override
   State<GoPremiumScreen> createState() => _GoPremiumScreenState();
 }
 
 class _GoPremiumScreenState extends State<GoPremiumScreen> {
-  bool _isLoading = false;
+  bool _isLoading = true;
   bool _isPurchasing = false;
   String _trialOffer = '';
   List<String> _benefits = [];
   List<Map<String, String>> _terms = [];
+  List<PremiumPlan> _plans = [];
+  String? _selectedPlanId;
+
+  PremiumService get _premium => PremiumService.instance;
+
+  PremiumPlan? get _selectedPlan {
+    for (final p in _plans) {
+      if (p.id == _selectedPlanId) return p;
+    }
+    return _plans.isNotEmpty ? _plans.first : null;
+  }
 
   @override
   void initState() {
     super.initState();
     _fetchPlans();
+    _premium.refreshStatus();
+    _premium.addListener(_onPremiumChanged);
     LanguageService.instance.addListener(_onLanguageChanged);
   }
 
   @override
   void dispose() {
+    _premium.removeListener(_onPremiumChanged);
     LanguageService.instance.removeListener(_onLanguageChanged);
     super.dispose();
+  }
+
+  void _onPremiumChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onLanguageChanged() {
@@ -48,9 +78,16 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
         final data = res['data'] as Map<String, dynamic>;
         final rawBenefits = data['benefits'] as List<dynamic>? ?? [];
         final rawTerms = data['terms'] as List<dynamic>? ?? [];
+        final plans = await _premium.loadPlans();
 
         if (mounted) {
           setState(() {
+            _plans = plans;
+            if (_selectedPlanId == null && plans.isNotEmpty) {
+              _selectedPlanId = plans
+                  .firstWhere((p) => p.isBestValue, orElse: () => plans.first)
+                  .id;
+            }
             _trialOffer = data['trialOffer']?.toString() ?? _trialOffer;
             _benefits = rawBenefits.map((e) => e.toString()).toList();
             _terms = rawTerms.map((e) {
@@ -74,70 +111,245 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
     }
   }
 
-  Future<void> _handleGoPremium() async {
-    setState(() {
-      _isPurchasing = true;
-    });
-
-    try {
-      final res = await ApiClient.instance.post('/subscriptions/verify', {
-        'planType': 'yearly_trial',
-        'purchaseToken': 'strongly_premium_token_${DateTime.now().millisecondsSinceEpoch}',
-      });
-
-      if (mounted) {
-        setState(() {
-          _isPurchasing = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF1F1F23),
-            content: Row(
-              children: [
-                const Icon(Icons.workspace_premium_rounded, color: AppColors.primaryLime),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    res['message']?.toString() ?? 'Premium Activated Successfully! 🎉',
-                    style: GoogleFonts.outfit(
-                      color: AppColors.primaryLime,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+  void _showMessage(String text, {bool success = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF1F1F23),
+        content: Row(
+          children: [
+            Icon(
+              success ? Icons.workspace_premium_rounded : Icons.info_outline_rounded,
+              color: success ? AppColors.primaryLime : Colors.white70,
             ),
-          ),
-        );
-
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isPurchasing = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF1F1F23),
-            content: Text(
-              'Subscription processed 🎉',
-              style: GoogleFonts.outfit(
-                color: AppColors.primaryLime,
-                fontWeight: FontWeight.w600,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                text,
+                style: GoogleFonts.outfit(
+                  color: success ? AppColors.primaryLime : Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-        );
-        Navigator.of(context).pop();
-      }
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleGoPremium() async {
+    final plan = _selectedPlan;
+    if (plan == null) {
+      _showMessage('Plans are not available right now. Please try again.');
+      return;
     }
+
+    setState(() => _isPurchasing = true);
+    final result = await _premium.buy(plan);
+    if (!mounted) return;
+    setState(() => _isPurchasing = false);
+
+    if (result.success && _premium.isPremium) {
+      _showMessage(result.message ?? 'Premium Activated Successfully! 🎉', success: true);
+      Navigator.of(context).pop();
+    } else if (result.message != null && result.message != 'Purchase canceled.') {
+      _showMessage(result.message!);
+    }
+  }
+
+  Future<void> _handleRestore() async {
+    setState(() => _isPurchasing = true);
+    await _premium.restore();
+    // Restored purchases are verified through the purchase stream
+    await Future.delayed(const Duration(seconds: 3));
+    await _premium.refreshStatus();
+    if (!mounted) return;
+    setState(() => _isPurchasing = false);
+
+    if (_premium.isPremium) {
+      _showMessage('Purchases restored. Premium active 🎉', success: true);
+      Navigator.of(context).pop();
+    } else {
+      _showMessage('No active subscription found.');
+    }
+  }
+
+  Future<void> _handleCancel() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1B1B1E),
+        title: Text(
+          'Cancel subscription?',
+          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Auto-renew will be turned off. You keep Premium until the end of the current period.',
+          style: GoogleFonts.outfit(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Keep Premium', style: GoogleFonts.outfit(color: AppColors.primaryLime)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Cancel Subscription', style: GoogleFonts.outfit(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isPurchasing = true);
+    final result = await _premium.cancel();
+    if (!mounted) return;
+    setState(() => _isPurchasing = false);
+
+    // iOS: cancellation happens in App Store settings
+    if (result.manageUrl != null) {
+      await launchUrl(Uri.parse(result.manageUrl!), mode: LaunchMode.externalApplication);
+      return;
+    }
+    _showMessage(
+      result.message ?? (result.success ? 'Subscription canceled.' : 'Could not cancel subscription.'),
+      success: result.success,
+    );
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final d = date.toLocal();
+    return '${d.day} ${months[d.month - 1]} ${d.year}';
+  }
+
+  String _priceLine(PremiumPlan plan) {
+    final price = plan.interval == 'lifetime' ? plan.displayPrice : '${plan.displayPrice}/${plan.intervalLabel}';
+    return plan.trialDays > 0 ? 'Free ${plan.trialDays}-day trial, then $price' : price;
+  }
+
+  Widget _buildPlanCard(PremiumPlan plan) {
+    final selected = plan.id == _selectedPlan?.id;
+    return GestureDetector(
+      key: ValueKey('premium_plan_${plan.id}'),
+      onTap: () => setState(() => _selectedPlanId = plan.id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF1F290F) : const Color(0xFF141416),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? AppColors.primaryLime : Colors.white.withValues(alpha: 0.12),
+            width: selected ? 1.6 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              color: selected ? AppColors.primaryLime : Colors.white38,
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          plan.title,
+                          style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+                        ),
+                      ),
+                      if (plan.isBestValue) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLime,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'BEST VALUE',
+                            style: GoogleFonts.outfit(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF0A0A0B),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (plan.trialDays > 0) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '${plan.trialDays}-day free trial',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryLime,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              plan.interval == 'lifetime' ? plan.displayPrice : '${plan.displayPrice}/${plan.intervalLabel}',
+              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActiveCard() {
+    final isTrial = _premium.activeSubscription?['isTrial'] == true;
+    final dateText = _formatDate(_premium.expiresAt);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F290F),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primaryLime, width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.workspace_premium_rounded, color: AppColors.primaryLime, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                isTrial ? 'Free trial active' : 'Premium active',
+                style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primaryLime),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _premium.autoRenewing ? 'Renews on $dateText' : 'Premium until $dateText (auto-renew off)',
+            style: GoogleFonts.outfit(fontSize: 13, color: Colors.white70),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    final isPremium = _premium.isPremium;
+    final selectedPlan = _selectedPlan;
 
     if (_isLoading && _benefits.isEmpty) {
       return const Scaffold(
@@ -148,6 +360,19 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
       );
     }
 
+    final String ctaTitle;
+    final String ctaSubtitle;
+    final VoidCallback? ctaAction;
+    if (isPremium) {
+      ctaTitle = _premium.autoRenewing ? 'Cancel Subscription' : 'Done';
+      ctaSubtitle = _premium.autoRenewing ? 'Premium stays active until the period ends' : '';
+      ctaAction = _premium.autoRenewing ? _handleCancel : () => Navigator.of(context).pop();
+    } else {
+      ctaTitle = 'Go Premium';
+      ctaSubtitle = selectedPlan != null ? _priceLine(selectedPlan) : _trialOffer;
+      ctaAction = _handleGoPremium;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0B),
       body: Stack(
@@ -156,7 +381,7 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
           SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.only(
-              bottom: 120.0 + bottomInset,
+              bottom: 140.0 + bottomInset,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,6 +549,11 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
                           ),
                         ),
 
+                      const SizedBox(height: 12),
+
+                      // Active subscription or plan selection
+                      if (isPremium) _buildActiveCard() else ..._plans.map(_buildPlanCard),
+
                       const SizedBox(height: 24),
 
                       // Subscription Disclosures / Terms
@@ -392,7 +622,7 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
                   // Full-width Lime Button
                   GestureDetector(
                     key: const ValueKey('go_premium_cta_button'),
-                    onTap: _isPurchasing ? null : _handleGoPremium,
+                    onTap: _isPurchasing ? null : ctaAction,
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -431,7 +661,7 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      'Go Premium',
+                                      ctaTitle,
                                       style: GoogleFonts.outfit(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
@@ -440,30 +670,62 @@ class _GoPremiumScreenState extends State<GoPremiumScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _trialOffer,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF0A0A0B),
+                                if (ctaSubtitle.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    ctaSubtitle,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0A0A0B),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                     ),
                   ),
                   const SizedBox(height: 8),
 
-                  // Subtext
-                  Text(
-                    'Cancel anytime during the trial',
-                    style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white38,
+                  // Subtext / Restore purchases
+                  if (isPremium)
+                    Text(
+                      'You can also manage it from your store account',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white38,
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      key: const ValueKey('go_premium_restore_button'),
+                      onTap: _isPurchasing ? null : _handleRestore,
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Cancel anytime  •  ',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white38,
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'Restore purchases',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white70,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

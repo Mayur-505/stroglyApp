@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../profile/screens/go_premium_screen.dart';
 import '../models/category_workout_models.dart';
 import 'category_workout_tile.dart';
 
@@ -113,7 +114,7 @@ class WorkoutUnlockSheet extends StatelessWidget {
 
           // Title
           Text(
-            'Watch video to unlock',
+            'Premium workout',
             style: GoogleFonts.outfit(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -126,7 +127,7 @@ class WorkoutUnlockSheet extends StatelessWidget {
 
           // Subtitle
           Text(
-            'Watch the video to use training plan once',
+            'Go Premium to unlock all workouts and plans',
             style: GoogleFonts.outfit(
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -209,7 +210,11 @@ class WorkoutUnlockSheet extends StatelessWidget {
 
           // Go Premium Button
           GestureDetector(
-            onTap: onUnlocked,
+            key: const ValueKey('unlock_sheet_go_premium_button'),
+            onTap: () async {
+              final isPremium = await GoPremiumScreen.open(context);
+              if (isPremium) onUnlocked();
+            },
             child: Container(
               width: double.infinity,
               height: 52,

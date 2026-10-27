@@ -8,6 +8,7 @@ import 'core/services/remote_config_service.dart';
 import 'core/constants/app_colors.dart';
 import 'core/services/language_service.dart';
 import 'core/network/auth_session_manager.dart';
+import 'core/services/premium_service.dart';
 import 'features/splash/screens/splash_screen.dart';
 
 void main() async {
@@ -24,6 +25,8 @@ void main() async {
   } catch (e) {
     debugPrint('Firebase init failed: $e');
   }
+  // Not awaited: premium status loads in the background
+  PremiumService.instance.init();
   runApp(const StronglyApp());
   // Consent + Mobile Ads start in the background; the splash screen waits
   // for them with its own timeout.

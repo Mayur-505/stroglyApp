@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
 import '../models/progress_models.dart';
@@ -8,6 +9,8 @@ import '../widgets/progress_summary_card.dart';
 import '../widgets/progress_tab_bar.dart';
 import '../widgets/workout_history_card.dart';
 import '../../../core/ads/widgets/ad_placement.dart';
+import '../widgets/premium_lock_overlay.dart';
+import '../../profile/screens/go_premium_screen.dart';
 
 class ProgressDetailScreen extends StatefulWidget {
   final ProgressTabType initialTab;
@@ -29,6 +32,13 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
   Set<int> _completedDays = {};
   List<WorkoutHistoryLogItem> _historyLogs = [];
   WeeklyActivityChartData? _workoutChart;
+  bool _chartsLocked = false;
+  int? _historyDays; // set when free users only get recent history
+
+  Future<void> _openPaywall() async {
+    final isPremium = await GoPremiumScreen.open(context);
+    if (isPremium) _fetchHistory();
+  }
 
   @override
   void initState() {
@@ -72,6 +82,7 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
       if (res.isOk && res.data != null) {
         final data = res.data as Map<String, dynamic>;
         _month = data['month']?.toString() ?? 'September 2026';
+        _historyDays = data['historyLimited'] == true ? (data['historyDays'] as num?)?.toInt() : null;
 
         final rawCompleted = data['completedDays'] as List<dynamic>? ?? [];
         _completedDays = rawCompleted.map((e) => (e as num).toInt()).toSet();
@@ -85,6 +96,7 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
       if (!skipDashboard) {
         final dashRes = await ApiClient.instance.get('/progress/dashboard');
         if (dashRes.isOk && dashRes.data != null) {
+          _chartsLocked = dashRes.data['chartsLocked'] == true;
           final charts = dashRes.data['charts'] as Map<String, dynamic>? ?? {};
           if (charts['workoutChart'] != null) {
             _workoutChart = WeeklyActivityChartData.fromJson(
@@ -220,9 +232,13 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
         const SizedBox(height: 12),
 
         // Summary Average Card
-        ProgressSummaryCard(
-          days: _workoutChart?.days,
-          averageValue: _workoutChart?.weeklyAverageText ?? '1',
+        PremiumLockOverlay(
+          locked: _chartsLocked,
+          onUnlock: _openPaywall,
+          child: ProgressSummaryCard(
+            days: _workoutChart?.days,
+            averageValue: _workoutChart?.weeklyAverageText ?? '1',
+          ),
         ),
       ],
     );
@@ -259,6 +275,33 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
         const SizedBox(height: 12),
 
         // Workout History Card
+        if (_historyDays != null) ...[
+          GestureDetector(
+            onTap: _openPaywall,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F290F),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.primaryLime, width: 1),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lock_rounded, color: AppColors.primaryLime, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Showing last $_historyDays days. Go Premium for full history.',
+                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primaryLime),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         WorkoutHistoryCard(
           logs: _historyLogs,
           totalWorkouts: _historyLogs.length,

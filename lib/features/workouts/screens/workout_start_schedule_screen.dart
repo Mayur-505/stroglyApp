@@ -6,6 +6,7 @@ import '../../../core/widgets/app_image.dart';
 import '../../../core/services/language_service.dart';
 import '../models/workout_detail_models.dart';
 import '../widgets/workout_day_card.dart';
+import '../../profile/screens/go_premium_screen.dart';
 import 'day_workout_exercises_screen.dart';
 import '../../../core/ads/widgets/ad_placement.dart';
 
@@ -33,6 +34,7 @@ class _WorkoutStartScheduleScreenState
   late String _selectedLevel;
   late List<WorkoutDayItem> _days;
   WorkoutDetailData? _detailData;
+  bool _isPlanLocked = false;
 
   @override
   void initState() {
@@ -74,6 +76,7 @@ class _WorkoutStartScheduleScreenState
       if (res.isOk && res.data != null) {
         if (mounted) {
           setState(() {
+            _isPlanLocked = (res['data'] as Map)['isLocked'] == true;
             _detailData = WorkoutDetailData.fromJson(
               Map<String, dynamic>.from(res['data'] as Map),
             );
@@ -92,7 +95,14 @@ class _WorkoutStartScheduleScreenState
   double get _overallProgress =>
       _days.isEmpty ? 0.0 : _completedDaysCount / _days.length;
 
-  void _onDayCardTapped(WorkoutDayItem day) {
+  Future<void> _onDayCardTapped(WorkoutDayItem day) async {
+    // Premium plan for a free user: show paywall, reload plan after purchase
+    if (_isPlanLocked) {
+      final isPremium = await GoPremiumScreen.open(context);
+      if (isPremium) await _fetchPlan();
+      return;
+    }
+
     if (!day.isUnlocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

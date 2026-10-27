@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/premium_service.dart';
 
 class AuthSessionManager {
   static final AuthSessionManager instance = AuthSessionManager._internal();
@@ -70,6 +71,9 @@ class AuthSessionManager {
         await prefs.setString(_keyUserAvatar, avatar);
       }
     } catch (_) {}
+
+    // Load the new user's premium status
+    PremiumService.instance.refreshStatus();
   }
 
   Future<void> clearSession() async {
@@ -89,5 +93,7 @@ class AuthSessionManager {
       await prefs.remove(_keyUserEmail);
       await prefs.remove(_keyUserAvatar);
     } catch (_) {}
+
+    PremiumService.instance.reset();
   }
 }

@@ -5,15 +5,15 @@ class ApiConstants {
   // Configurable base URL
   static String get baseUrl {
     if (kIsWeb) {
-      return 'https://luminance-last-sizzle.ngrok-free.dev/api/v1';
+      return 'https://2846z2xn-5001.inc1.devtunnels.ms/api/v1';
     }
     try {
       if (Platform.isAndroid) {
         // 10.0.2.2 maps to host localhost in Android Emulator
-        return 'https://luminance-last-sizzle.ngrok-free.dev/api/v1';
+        return 'https://2846z2xn-5001.inc1.devtunnels.ms/api/v1';
       }
     } catch (_) {}
-    return 'https://luminance-last-sizzle.ngrok-free.dev/api/v1';
+    return 'https://2846z2xn-5001.inc1.devtunnels.ms/api/v1';
   }
 
   // System & Content
@@ -63,4 +63,7 @@ class ApiConstants {
   static const String subscriptionPlans = '/subscriptions/plans';
   static const String verifyPurchase = '/subscriptions/verify';
   static const String subscriptionStatus = '/subscriptions/my-status';
+  static const String restorePurchases = '/subscriptions/restore';
+  static const String cancelSubscription = '/subscriptions/cancel';
+  static const String subscriptionHistory = '/subscriptions/history';
 }

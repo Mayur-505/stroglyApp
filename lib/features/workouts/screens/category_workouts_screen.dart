@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_constants.dart';
+import '../../../core/services/premium_service.dart';
 import '../models/category_workout_models.dart';
 import '../widgets/category_workout_tile.dart';
 import '../widgets/workout_customization_flow_sheet.dart';
@@ -274,7 +275,10 @@ class _CategoryWorkoutsScreenState extends State<CategoryWorkoutsScreen> {
                           separatorBuilder: (context, index) =>
                               const SizedBox(height: 16),
                           itemBuilder: (context, index) {
-                            final workout = _workouts[index];
+                            // Premium users see every workout unlocked
+                            final workout = PremiumService.instance.isPremium
+                                ? _workouts[index].copyWith(isFree: true)
+                                : _workouts[index];
                             return CategoryWorkoutTile(
                               item: workout,
                               onTap: () {

@@ -1,17 +1,24 @@
-# strongly
+# Strongly (native Android, Java)
 
-A new Flutter project.
+Native Android port of the Strongly Flutter app. Java 17, no Kotlin, no Compose, no ads.
 
-## Getting Started
+- `applicationId`: `com.strongly.strongly`; `compileSdk`/`targetSdk` 36; `minSdk` 26.
+- Backend base URL: `app/src/main/java/com/strongly/strongly/net/ApiConstants.java`.
+- Premium: Google Play Billing (`billing/PremiumService.java`).
 
-This project is a starting point for a Flutter application.
+## Building
 
-A few resources to get you started if this is your first Flutter project:
+```
+./gradlew assembleDebug          # debug APK
+./gradlew bundleRelease          # signed release AAB (needs signing files below)
+./gradlew assembleRelease        # signed release APK
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Release signing
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Signing files are intentionally **not** committed. Place them locally:
+
+- `app/upload-keystore.jks`
+- `key.properties` in the repo root with `storeFile`, `storePassword`, `keyAlias`, `keyPassword`
+
+Both are listed in `.gitignore`.

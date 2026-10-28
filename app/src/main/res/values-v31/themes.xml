@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Strongly" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/primary_lime</item>
+        <item name="android:windowBackground">@color/background_black</item>
+        <item name="android:statusBarColor">@color/background_black</item>
+        <item name="android:navigationBarColor">@color/background_black</item>
+        <item name="android:textColor">@color/text_white</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="fontFamily">@font/outfit</item>
+        <item name="android:windowSplashScreenBackground">@color/background_black</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+    </style>
+</resources>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".StronglyApp"
+        android:label="Strongly"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/Theme.Strongly"
+        android:allowBackup="false"
+        android:supportsRtl="true">
+        <activity
+            android:name=".ui.SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+            <activity android:name=".ui.OnboardingActivity" android:exported="false" />
+        <activity android:name=".ui.LanguageActivity" android:exported="false" />
+        <activity android:name=".ui.GenderActivity" android:exported="false" />
+        <activity android:name=".ui.QuestionnaireActivity" android:exported="false" />
+        <activity android:name=".ui.HomeActivity" android:exported="false" />
+        <activity android:name=".ui.StubActivity" android:exported="false" />
+        <activity android:name=".ui.CategoryWorkoutsActivity" android:exported="false" />
+        <activity android:name=".ui.WorkoutSearchActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+            <activity android:name=".ui.PlanDetailActivity" android:exported="false" />
+        <activity android:name=".ui.ScheduleActivity" android:exported="false" />
+        <activity android:name=".ui.DayExercisesActivity" android:exported="false" />
+        <activity android:name=".ui.ExercisePreviewActivity" android:exported="false" />
+        <activity android:name=".ui.ActiveWorkoutActivity" android:exported="false" android:screenOrientation="sensorLandscape" android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+            <activity android:name=".ui.ProgressDetailActivity" android:exported="false" />
+            <activity android:name=".ui.LoginActivity" android:exported="false" android:launchMode="singleTop" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.SignupActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.ForgotPasswordActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.OtpActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.ResetPasswordActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.EditProfileActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.GoPremiumActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+    </application>
+</manifest>

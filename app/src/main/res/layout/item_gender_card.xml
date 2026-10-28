@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card"
+    android:layout_width="match_parent"
+    android:layout_height="135dp"
+    android:layout_marginVertical="8dp"
+    android:padding="1dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gender_inner"
+        android:clipToOutline="true">
+
+        <View
+            android:id="@+id/dome"
+            android:layout_width="125dp"
+            android:layout_height="75dp"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="14dp" />
+
+        <ImageView
+            android:id="@+id/athlete"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@null"
+            android:scaleType="fitEnd" />
+
+        <TextView
+            android:id="@+id/label"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:layout_marginEnd="36dp"
+            android:gravity="center"
+            android:letterSpacing="0.055"
+            android:textSize="22sp" />
+    </FrameLayout>
+</FrameLayout>

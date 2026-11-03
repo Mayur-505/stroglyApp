@@ -114,6 +114,7 @@ public final class Ads {
     private static final String CONFIG_URL =
             "https://api.ads-config.greewebsolutions.com/projects/f04f430f-adb3-4f90-8d5f-6179e4bb2fde/json/89527f58-ccf4-4e0b-9097-a95903f2d264";
     private static final long CONFIG_RETRY_MS = 15_000;
+    private static final long LATE_APP_OPEN_MS = 12_000; // how long after launch a late app-open ad may still show
 
     private static final String TAG = "AdsCfg";
     private static boolean loadingConfig = false;
@@ -196,8 +197,18 @@ public final class Ads {
         if (!enabled()) return;
         MAIN.postDelayed(() -> {
             android.util.Log.i(TAG, "launch app-open show now: " + launchAdState() + " resumed=" + resumed);
-            if (AppOpenManager.isSplashAdAvailable()) AppOpenManager.showSplashAppOpenAd(null);
-            else AppOpenManager.showAdIfAvailable();
+            if (AppOpenManager.isSplashAdAvailable()) {
+                AppOpenManager.showSplashAppOpenAd(null);
+                return;
+            }
+            // Not loaded yet (slow network): show it when it arrives, as long as it is still the start of the session
+            final long deadline = System.currentTimeMillis() + LATE_APP_OPEN_MS;
+            AppOpenManager.splashLoadedListener = () -> {
+                boolean inTime = System.currentTimeMillis() < deadline;
+                boolean visible = resumed != null && !(resumed instanceof com.google.android.gms.ads.AdActivity);
+                android.util.Log.i(TAG, "late app-open arrived: inTime=" + inTime + " visible=" + visible);
+                if (enabled() && inTime && visible) AppOpenManager.showSplashAppOpenAd(null);
+            };
         }, 500);
     }
 

@@ -32,6 +32,9 @@ public class AppOpenManager implements LifecycleObserver, Application.ActivityLi
     private static AppOpenAd app_open_ad = null;
     private static AppOpenAd splash_app_open_ad = null;
 
+    /** Called on the main thread when the launch app-open ad has finished loading (used to show a late-arriving ad). */
+    public static Runnable splashLoadedListener;
+
     private static boolean isShowingAd = false;
     private static boolean isAdLoading = false;
     private static boolean isSplashAdLoading = false;
@@ -172,6 +175,11 @@ public class AppOpenManager implements LifecycleObserver, Application.ActivityLi
                 isSplashAdLoading = false;
                 splashLoadTime = (new Date()).getTime();
                 Log.i("AppOpenManager", "splash_app_open_ad loaded successfully!");
+                if (splashLoadedListener != null) {
+                    Runnable l = splashLoadedListener;
+                    splashLoadedListener = null;
+                    l.run();
+                }
             }
 
             @Override

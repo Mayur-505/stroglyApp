@@ -33,7 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Seven-step questionnaire (Flutter screens 106-112). */
+/** Seven-step questionnaire (Flutter screens 106-112) with instant, non-blinking selection. */
 public class QuestionnaireActivity extends AppCompatActivity {
     public static final String EXTRA_GENDER = "gender";
     private static final int LIME = 0xFFA3D223;
@@ -55,6 +55,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
         UiUtil.edgeToEdge(this);
         UiUtil.padForInsets(findViewById(R.id.content), true, true);
         UiUtil.weight((TextView) findViewById(R.id.title), 900);
+        UiUtil.weight((TextView) findViewById(R.id.subtitle), 400);
         UiUtil.weight((TextView) findViewById(R.id.next_text), 600);
 
         String g = getIntent().getStringExtra(EXTRA_GENDER);
@@ -84,7 +85,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
 
         Icons.apply(nextIcon, Icons.ARROW_FORWARD_ROUNDED, 18, 0xFFFFFFFF);
         findViewById(R.id.next).setOnClickListener(v -> next());
-        render();
+        renderStep();
     }
 
     private void hideKeyboard() {
@@ -97,7 +98,12 @@ public class QuestionnaireActivity extends AppCompatActivity {
 
     private void prev() {
         hideKeyboard();
-        if (step > 0) { step--; render(); } else finish();
+        if (step > 0) {
+            step--;
+            renderStep();
+        } else {
+            finish();
+        }
     }
 
     private void next() {
@@ -107,7 +113,12 @@ public class QuestionnaireActivity extends AppCompatActivity {
             profile.weight = parse(weightStr, 75);
             profile.age = parse(ageStr, 25);
         }
-        if (step < STEPS - 1) { step++; render(); } else complete();
+        if (step < STEPS - 1) {
+            step++;
+            renderStep();
+        } else {
+            complete();
+        }
     }
 
     private static int parse(String s, int def) {
@@ -129,7 +140,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
 
     // ------------------------------------------------------------------ rendering
 
-    private void render() {
+    private void renderStep() {
         body.removeAllViews();
         body.setAlpha(0f);
         String sub = null;
@@ -169,7 +180,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
         subtitle.setText(sub);
         subtitle.setVisibility(sub == null ? View.GONE : View.VISIBLE);
         nextText.setText(btn);
-        body.animate().alpha(1f).setDuration(250).start();
+        body.animate().alpha(1f).setDuration(220).start();
     }
 
     // ------------------------------------------------------------------ helpers
@@ -331,7 +342,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
         return labeled(Tr.t("activity_level"), Icons.DIRECTIONS_RUN_OUTLINED, box);
     }
 
-    // ------------------------------------------------------------------ step 1: goals
+    // ------------------------------------------------------------------ step 1: goals (No blinking!)
 
     private void buildGoals() {
         String[][] goals = {
@@ -343,46 +354,56 @@ public class QuestionnaireActivity extends AppCompatActivity {
                 {"Stay Active", "stay_active", String.valueOf(Icons.SMILE_ROUNDED)},
         };
         int gap = dp(14);
+        int w = (getResources().getDisplayMetrics().widthPixels - dp(48) - gap) / 2;
+
         for (int r = 0; r < goals.length; r += 2) {
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
             for (int c = 0; c < 2; c++) {
-                String[] g = goals[r + c];
+                final String[] g = goals[r + c];
                 boolean sel = profile.goals.contains(g[0]);
 
                 FrameLayout content = new FrameLayout(this);
                 LinearLayout col = new LinearLayout(this);
                 col.setOrientation(LinearLayout.VERTICAL);
                 col.setGravity(Gravity.CENTER);
-                col.addView(Icons.view(this, Integer.parseInt(g[2]), 32, sel ? LIME : 0xFFFFFFFF));
+                TextView iconView = Icons.view(this, Integer.parseInt(g[2]), 32, sel ? LIME : 0xFFFFFFFF);
+                col.addView(iconView);
                 TextView t = text(Tr.t(g[1]), 14, 600, 0xFFFFFFFF);
                 t.setGravity(Gravity.CENTER);
                 LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(-2, -2);
                 tp.topMargin = dp(10);
                 col.addView(t, tp);
                 content.addView(col, new FrameLayout.LayoutParams(-1, -1, Gravity.CENTER));
-                if (sel) {
-                    FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.END);
-                    content.addView(checkIcon(), cp);
-                }
+
+                View check = checkIcon();
+                FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.END);
+                content.addView(check, cp);
+                check.setVisibility(sel ? View.VISIBLE : View.GONE);
+
                 int p = dp(12);
-                View card = Cards.gradientCard(this, sel, 16, p, p, p, p, content, v -> {
-                    if (profile.goals.contains(g[0])) profile.goals.remove(g[0]); else profile.goals.add(g[0]);
-                    int sy = ((View) body.getParent()).getScrollY();
-                    render();
-                    body.post(() -> ((View) body.getParent()).setScrollY(sy));
+                final FrameLayout[] cardHolder = new FrameLayout[1];
+                cardHolder[0] = Cards.gradientCard(this, sel, 16, p, p, p, p, content, v -> {
+                    if (profile.goals.contains(g[0])) {
+                        profile.goals.remove(g[0]);
+                    } else {
+                        profile.goals.add(g[0]);
+                    }
+                    boolean nowSel = profile.goals.contains(g[0]);
+                    Cards.updateCardSelection(cardHolder[0], nowSel, 16);
+                    check.setVisibility(nowSel ? View.VISIBLE : View.GONE);
+                    iconView.setTextColor(nowSel ? LIME : 0xFFFFFFFF);
                 });
-                // aspect ratio 1.25 (width / height)
-                int w = (getResources().getDisplayMetrics().widthPixels - dp(48) - gap) / 2;
+
                 LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(w, Math.round(w / 1.25f));
                 if (c == 1) cl.setMarginStart(gap);
-                row.addView(card, cl);
+                row.addView(cardHolder[0], cl);
             }
             body.addView(row, lp(-2, -2, r == 0 ? 0 : 14));
         }
     }
 
-    // ------------------------------------------------------------------ steps 2, 3: list cards
+    // ------------------------------------------------------------------ steps 2, 3: list cards (No blinking!)
 
     private void buildPlaces() {
         String[][] places = {
@@ -390,12 +411,21 @@ public class QuestionnaireActivity extends AppCompatActivity {
                 {"Gym", "gym", "gym_place_desc", String.valueOf(Icons.FITNESS_CENTER_ROUNDED)},
                 {"Outdoor", "outdoor", "outdoor_place_desc", String.valueOf(Icons.PARK_ROUNDED)},
         };
-        for (String[] pl : places) {
+
+        FrameLayout[] cards = new FrameLayout[places.length];
+        View[] checks = new View[places.length];
+        TextView[] icons = new TextView[places.length];
+
+        for (int i = 0; i < places.length; i++) {
+            final int idx = i;
+            final String[] pl = places[i];
             boolean sel = profile.workoutPlace.equals(pl[0]);
+
             LinearLayout row = new LinearLayout(this);
             row.setGravity(Gravity.CENTER_VERTICAL);
-            row.addView(Icons.view(this, Integer.parseInt(pl[3]), 26, sel ? LIME : 0xFFFFFFFF),
-                    new LinearLayout.LayoutParams(dp(26), dp(26)));
+            icons[i] = Icons.view(this, Integer.parseInt(pl[3]), 26, sel ? LIME : 0xFFFFFFFF);
+            row.addView(icons[i], new LinearLayout.LayoutParams(dp(26), dp(26)));
+
             LinearLayout col = new LinearLayout(this);
             col.setOrientation(LinearLayout.VERTICAL);
             col.addView(text(Tr.t(pl[1]), 16, 700, 0xFFFFFFFF));
@@ -404,13 +434,25 @@ public class QuestionnaireActivity extends AppCompatActivity {
             LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, -2, 1f);
             cp.setMarginStart(dp(16));
             row.addView(col, cp);
-            if (sel) row.addView(Icons.view(this, Icons.CHECK_CIRCLE_ROUNDED, 20, LIME));
+
+            checks[i] = Icons.view(this, Icons.CHECK_CIRCLE_ROUNDED, 20, LIME);
+            checks[i].setVisibility(sel ? View.VISIBLE : View.GONE);
+            row.addView(checks[i]);
+
             int p = dp(18);
-            body.addView(Cards.gradientCard(this, sel, 16, p, p, p, p, row, v -> {
+            cards[i] = Cards.gradientCard(this, sel, 16, p, p, p, p, row, v -> {
                 profile.workoutPlace = pl[0];
-                render();
-            }), lp(-1, -2, 0));
-            ((LinearLayout.LayoutParams) body.getChildAt(body.getChildCount() - 1).getLayoutParams()).bottomMargin = dp(14);
+                for (int k = 0; k < places.length; k++) {
+                    boolean isK = (k == idx);
+                    Cards.updateCardSelection(cards[k], isK, 16);
+                    checks[k].setVisibility(isK ? View.VISIBLE : View.GONE);
+                    icons[k].setTextColor(isK ? LIME : 0xFFFFFFFF);
+                }
+            });
+
+            LinearLayout.LayoutParams clp = lp(-1, -2, 0);
+            clp.bottomMargin = dp(14);
+            body.addView(cards[i], clp);
         }
     }
 
@@ -420,8 +462,15 @@ public class QuestionnaireActivity extends AppCompatActivity {
                 {"Intermediate", "intermediate", "intermediate_desc"},
                 {"Advanced", "advanced", "advanced_desc"},
         };
-        for (String[] lv : levels) {
+
+        FrameLayout[] cards = new FrameLayout[levels.length];
+        View[] checks = new View[levels.length];
+
+        for (int i = 0; i < levels.length; i++) {
+            final int idx = i;
+            final String[] lv = levels[i];
             boolean sel = profile.fitnessLevel.equals(lv[0]);
+
             LinearLayout row = new LinearLayout(this);
             row.setGravity(Gravity.CENTER_VERTICAL);
             LinearLayout col = new LinearLayout(this);
@@ -429,19 +478,28 @@ public class QuestionnaireActivity extends AppCompatActivity {
             col.addView(text(Tr.t(lv[1]), 17, 700, 0xFFFFFFFF));
             col.addView(text(Tr.t(lv[2]), 13, 400, 0x99FFFFFF), lp(-2, -2, 4));
             row.addView(col, new LinearLayout.LayoutParams(0, -2, 1f));
-            if (sel) row.addView(Icons.view(this, Icons.CHECK_CIRCLE_ROUNDED, 20, LIME));
+
+            checks[i] = Icons.view(this, Icons.CHECK_CIRCLE_ROUNDED, 20, LIME);
+            checks[i].setVisibility(sel ? View.VISIBLE : View.GONE);
+            row.addView(checks[i]);
+
             int p = dp(20);
-            View card = Cards.gradientCard(this, sel, 16, p, p, p, p, row, v -> {
+            cards[i] = Cards.gradientCard(this, sel, 16, p, p, p, p, row, v -> {
                 profile.fitnessLevel = lv[0];
-                render();
+                for (int k = 0; k < levels.length; k++) {
+                    boolean isK = (k == idx);
+                    Cards.updateCardSelection(cards[k], isK, 16);
+                    checks[k].setVisibility(isK ? View.VISIBLE : View.GONE);
+                }
             });
+
             LinearLayout.LayoutParams cp = lp(-1, -2, 0);
             cp.bottomMargin = dp(14);
-            body.addView(card, cp);
+            body.addView(cards[i], cp);
         }
     }
 
-    // ------------------------------------------------------------------ step 4: time
+    // ------------------------------------------------------------------ step 4: time (No blinking!)
 
     private void buildTime() {
         String minLabel = Tr.t("min");
@@ -470,86 +528,129 @@ public class QuestionnaireActivity extends AppCompatActivity {
         grid.setOrientation(LinearLayout.VERTICAL);
         body.addView(grid, lp(-1, -2, 20));
         int[] values = {10, 20, 30, 40, 50, 60};
-        List<View> cards = new ArrayList<>();
-        buildOptionGrid(grid, values.length, i -> values[i] + " " + minLabel,
-                i -> profile.duration.startsWith(String.valueOf(values[i])),
-                i -> {
-                    profile.duration = values[i] + " " + minLabel;
+
+        FrameLayout[] cards = new FrameLayout[values.length];
+        View[] checks = new View[values.length];
+
+        int gap = dp(14);
+        int w = (getResources().getDisplayMetrics().widthPixels - dp(48) - gap) / 2;
+
+        for (int r = 0; r < values.length; r += 2) {
+            LinearLayout row = new LinearLayout(this);
+            for (int c = 0; c < 2 && r + c < values.length; c++) {
+                final int idx = r + c;
+                boolean sel = profile.duration.startsWith(String.valueOf(values[idx]));
+
+                LinearLayout content = new LinearLayout(this);
+                content.setGravity(Gravity.CENTER_VERTICAL);
+                content.addView(text(values[idx] + " " + minLabel, 15, 600, 0xFFFFFFFF), new LinearLayout.LayoutParams(0, -2, 1f));
+
+                checks[idx] = checkIcon();
+                checks[idx].setVisibility(sel ? View.VISIBLE : View.GONE);
+                content.addView(checks[idx]);
+
+                cards[idx] = Cards.gradientCard(this, sel, 14, dp(14), 0, dp(14), 0, content, v -> {
+                    profile.duration = values[idx] + " " + minLabel;
                     manualTime = "";
-                    render();
+                    et.setText("");
+                    for (int k = 0; k < values.length; k++) {
+                        boolean isK = (k == idx);
+                        Cards.updateCardSelection(cards[k], isK, 14);
+                        checks[k].setVisibility(isK ? View.VISIBLE : View.GONE);
+                    }
                 });
+
+                ((FrameLayout) ((FrameLayout) cards[idx]).getChildAt(0)).getChildAt(0).setLayoutParams(
+                        new FrameLayout.LayoutParams(-1, -1));
+                LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(w, Math.round(w / 2.2f));
+                if (c == 1) cl.setMarginStart(gap);
+                row.addView(cards[idx], cl);
+            }
+            grid.addView(row, lp(-2, -2, r == 0 ? 0 : 14));
+        }
 
         et.addTextChangedListener(new SimpleWatcher(s -> {
             manualTime = s;
             if (!s.isEmpty()) {
                 profile.duration = s + " " + minLabel;
-                // Flutter rebuilds the grid on each keystroke; refresh the highlighted card only
-                grid.removeAllViews();
-                buildOptionGrid(grid, values.length, i -> values[i] + " " + minLabel,
-                        i -> profile.duration.startsWith(String.valueOf(values[i])),
-                        i -> {
-                            profile.duration = values[i] + " " + minLabel;
-                            manualTime = "";
-                            render();
-                        });
+                for (int k = 0; k < values.length; k++) {
+                    boolean isK = profile.duration.startsWith(String.valueOf(values[k]));
+                    Cards.updateCardSelection(cards[k], isK, 14);
+                    checks[k].setVisibility(isK ? View.VISIBLE : View.GONE);
+                }
             }
         }));
     }
 
-    private interface IntStr { String get(int i); }
-    private interface IntBool { boolean get(int i); }
-    private interface IntAct { void run(int i); }
-
-    /** Two-column grid of option cards, aspect ratio 2.2, 14dp gaps. */
-    private void buildOptionGrid(LinearLayout parent, int count, IntStr label, IntBool selected, IntAct onTap) {
-        int gap = dp(14);
-        int w = (getResources().getDisplayMetrics().widthPixels - dp(48) - gap) / 2;
-        for (int r = 0; r < count; r += 2) {
-            LinearLayout row = new LinearLayout(this);
-            for (int c = 0; c < 2 && r + c < count; c++) {
-                int idx = r + c;
-                boolean sel = selected.get(idx);
-                LinearLayout content = new LinearLayout(this);
-                content.setGravity(Gravity.CENTER_VERTICAL);
-                content.addView(text(label.get(idx), 15, 600, 0xFFFFFFFF), new LinearLayout.LayoutParams(0, -2, 1f));
-                if (sel) content.addView(checkIcon());
-                View card = Cards.gradientCard(this, sel, 14, dp(14), 0, dp(14), 0, content, v -> onTap.run(idx));
-                ((FrameLayout) ((FrameLayout) card).getChildAt(0)).getChildAt(0).setLayoutParams(
-                        new FrameLayout.LayoutParams(-1, -1));
-                LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(w, Math.round(w / 2.2f));
-                if (c == 1) cl.setMarginStart(gap);
-                row.addView(card, cl);
-            }
-            parent.addView(row, lp(-2, -2, r == 0 ? 0 : 14));
-        }
-    }
-
-    // ------------------------------------------------------------------ step 5: frequency
+    // ------------------------------------------------------------------ step 5: frequency (No blinking!)
 
     private void buildFrequency() {
         String dayLabel = Tr.t("day"), daysLabel = Tr.t("days"), everyDay = Tr.t("every_day");
         LinearLayout grid = new LinearLayout(this);
         grid.setOrientation(LinearLayout.VERTICAL);
         body.addView(grid, lp(-1, -2, 0));
-        buildOptionGrid(grid, 6, i -> (i + 1) + " " + (i + 1 == 1 ? dayLabel : daysLabel),
-                i -> profile.trainingDays.startsWith(String.valueOf(i + 1)),
-                i -> {
-                    profile.trainingDays = (i + 1) + " " + (i + 1 == 1 ? dayLabel : daysLabel);
-                    render();
+
+        FrameLayout[] cards = new FrameLayout[7];
+        View[] checks = new View[7];
+
+        int gap = dp(14);
+        int w = (getResources().getDisplayMetrics().widthPixels - dp(48) - gap) / 2;
+
+        Runnable updateSelection = () -> {
+            for (int k = 0; k < 6; k++) {
+                boolean isK = profile.trainingDays.startsWith(String.valueOf(k + 1));
+                Cards.updateCardSelection(cards[k], isK, 14);
+                checks[k].setVisibility(isK ? View.VISIBLE : View.GONE);
+            }
+            boolean isEvery = profile.trainingDays.equals("Every Day") || profile.trainingDays.equals(everyDay);
+            Cards.updateCardSelection(cards[6], isEvery, 14);
+            checks[6].setVisibility(isEvery ? View.VISIBLE : View.GONE);
+        };
+
+        for (int r = 0; r < 6; r += 2) {
+            LinearLayout row = new LinearLayout(this);
+            for (int c = 0; c < 2 && r + c < 6; c++) {
+                final int idx = r + c;
+                boolean sel = profile.trainingDays.startsWith(String.valueOf(idx + 1));
+
+                LinearLayout content = new LinearLayout(this);
+                content.setGravity(Gravity.CENTER_VERTICAL);
+                content.addView(text((idx + 1) + " " + (idx + 1 == 1 ? dayLabel : daysLabel), 15, 600, 0xFFFFFFFF),
+                        new LinearLayout.LayoutParams(0, -2, 1f));
+
+                checks[idx] = checkIcon();
+                checks[idx].setVisibility(sel ? View.VISIBLE : View.GONE);
+                content.addView(checks[idx]);
+
+                cards[idx] = Cards.gradientCard(this, sel, 14, dp(14), 0, dp(14), 0, content, v -> {
+                    profile.trainingDays = (idx + 1) + " " + (idx + 1 == 1 ? dayLabel : daysLabel);
+                    updateSelection.run();
                 });
 
-        boolean sel = profile.trainingDays.equals("Every Day") || profile.trainingDays.equals(everyDay);
+                ((FrameLayout) ((FrameLayout) cards[idx]).getChildAt(0)).getChildAt(0).setLayoutParams(
+                        new FrameLayout.LayoutParams(-1, -1));
+                LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(w, Math.round(w / 2.2f));
+                if (c == 1) cl.setMarginStart(gap);
+                row.addView(cards[idx], cl);
+            }
+            grid.addView(row, lp(-2, -2, r == 0 ? 0 : 14));
+        }
+
+        boolean isEvery = profile.trainingDays.equals("Every Day") || profile.trainingDays.equals(everyDay);
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.addView(text(everyDay, 15, 600, 0xFFFFFFFF), new LinearLayout.LayoutParams(0, -2, 1f));
-        if (sel) row.addView(checkIcon());
-        View card = Cards.gradientCard(this, sel, 14, dp(16), 0, dp(16), 0, row, v -> {
+        checks[6] = checkIcon();
+        checks[6].setVisibility(isEvery ? View.VISIBLE : View.GONE);
+        row.addView(checks[6]);
+
+        cards[6] = Cards.gradientCard(this, isEvery, 14, dp(16), 0, dp(16), 0, row, v -> {
             profile.trainingDays = everyDay;
-            render();
+            updateSelection.run();
         });
-        ((FrameLayout) ((FrameLayout) card).getChildAt(0)).getChildAt(0).setLayoutParams(
+        ((FrameLayout) ((FrameLayout) cards[6]).getChildAt(0)).getChildAt(0).setLayoutParams(
                 new FrameLayout.LayoutParams(-1, dp(50)));
-        body.addView(card, lp(-1, -2, 14));
+        body.addView(cards[6], lp(-1, -2, 14));
     }
 
     // ------------------------------------------------------------------ step 6: summary

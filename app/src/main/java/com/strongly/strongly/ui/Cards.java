@@ -32,4 +32,22 @@ public final class Cards {
         if (click != null) outer.setOnClickListener(click);
         return outer;
     }
+
+    public static void updateCardSelection(FrameLayout outer, boolean selected, float radiusDp) {
+        Context c = outer.getContext();
+        GradientDrawable border = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xFFA3D223, selected ? 0x66A3D223 : 0x00A3D223});
+        border.setCornerRadius(UiUtil.dp(c, radiusDp));
+        outer.setBackground(border);
+
+        if (outer.getChildCount() > 0 && outer.getChildAt(0) instanceof FrameLayout) {
+            FrameLayout inner = (FrameLayout) outer.getChildAt(0);
+            GradientDrawable fill = selected
+                    ? new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0xFF1B1B1D, 0xFF384F14})
+                    : new GradientDrawable();
+            if (!selected) fill.setColor(0xFF1B1B1D);
+            fill.setCornerRadius(UiUtil.dp(c, radiusDp - 1));
+            inner.setBackground(fill);
+        }
+    }
 }

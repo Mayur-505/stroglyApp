@@ -68,14 +68,48 @@ public class HomeFragment extends Fragment {
         refresh.addView(scroll);
         refresh.setOnRefreshListener(this::fetch);
         loadedLanguage = Session.language();
+        loadFallbackData();
+        loading = false;
         render();
         fetch();
         return refresh;
     }
 
+    private void loadFallbackData() {
+        if (featured == null) {
+            featured = new WorkoutItem("full_body_burn", "Full Body\nBurn", "30 MIN", "280 KCAL", "BEGINNER",
+                    "assets/images/featured_workout.jpg", true);
+        }
+        if (categories.isEmpty()) {
+            categories.add(new WorkoutCategory("home_workout", "Home Workout", Icons.HOME_ROUNDED));
+            categories.add(new WorkoutCategory("gym_workout", "Gym Workout", Icons.FITNESS_CENTER_ROUNDED));
+            categories.add(new WorkoutCategory("fat_burn", "Fat Burn", Icons.FIRE_ROUNDED));
+            categories.add(new WorkoutCategory("strength", "Strength", Icons.BOLT_ROUNDED));
+            categories.add(new WorkoutCategory("yoga", "Yoga", Icons.SELF_IMPROVEMENT_ROUNDED));
+            selectedCategoryId = "home_workout";
+        }
+        if (recommended.isEmpty()) {
+            recommended.add(new WorkoutItem("fat_burn_20", "20 MIN FAT BURN", "20 min", "210 kcal", "BEGINNER",
+                    "assets/images/workout_fat_burn.jpg", false));
+            recommended.add(new WorkoutItem("abs_and_core", "ABS & CORE", "15 min", "150 kcal", "BEGINNER",
+                    "assets/images/workout_abs_core.jpg", false));
+        }
+    }
+
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            render();
+            if (loadedLanguage != null && !loadedLanguage.equals(Session.language())) {
+                loadedLanguage = Session.language();
+                fetch();
+            }
+        }
+    }
     public void onResume() {
         super.onResume();
+        render();
         // Flutter re-fetches when the language changes
         if (loadedLanguage != null && !loadedLanguage.equals(Session.language())) {
             loadedLanguage = Session.language();
@@ -88,30 +122,35 @@ public class HomeFragment extends Fragment {
     // ------------------------------------------------------------------ data
 
     private void fetch() {
-        boolean hasData = featured != null || !categories.isEmpty() || !recommended.isEmpty();
-        if (!hasData) { loading = true; render(); }
         ApiClient.get().get(ApiConstants.HOME_FEED, null, r -> {
             if (!isAdded()) return;
             refresh.setRefreshing(false);
             if (r.isOk() && r.data != null && r.data.isJsonObject()) {
                 JsonObject d = r.data.getAsJsonObject();
-                featured = d.has("featuredWorkout") && d.get("featuredWorkout").isJsonObject()
+                WorkoutItem f = d.has("featuredWorkout") && d.get("featuredWorkout").isJsonObject()
                         ? WorkoutItem.fromJson(d.getAsJsonObject("featuredWorkout")) : null;
-                categories = new ArrayList<>();
+                if (f != null) featured = f;
+
+                List<WorkoutCategory> cats = new ArrayList<>();
                 if (d.has("categories") && d.get("categories").isJsonArray()) {
                     for (JsonElement e : d.getAsJsonArray("categories"))
-                        if (e.isJsonObject()) categories.add(WorkoutCategory.fromJson(e.getAsJsonObject()));
-                    if (!categories.isEmpty() && selectedCategoryId.isEmpty()) selectedCategoryId = categories.get(0).id;
+                        if (e.isJsonObject()) cats.add(WorkoutCategory.fromJson(e.getAsJsonObject()));
                 }
-                recommended = new ArrayList<>();
+                if (!cats.isEmpty()) {
+                    categories = cats;
+                    if (selectedCategoryId.isEmpty()) selectedCategoryId = categories.get(0).id;
+                }
+
+                List<WorkoutItem> recs = new ArrayList<>();
                 if (d.has("recommendedWorkouts") && d.get("recommendedWorkouts").isJsonArray()) {
                     JsonArray a = d.getAsJsonArray("recommendedWorkouts");
-                    for (JsonElement e : a) if (e.isJsonObject()) recommended.add(WorkoutItem.fromJson(e.getAsJsonObject()));
+                    for (JsonElement e : a) if (e.isJsonObject()) recs.add(WorkoutItem.fromJson(e.getAsJsonObject()));
                 }
+                if (!recs.isEmpty()) recommended = recs;
             } else {
-                featured = null;
-                categories = new ArrayList<>();
-                recommended = new ArrayList<>();
+                if (featured == null && categories.isEmpty() && recommended.isEmpty()) {
+                    loadFallbackData();
+                }
             }
             loading = false;
             render();

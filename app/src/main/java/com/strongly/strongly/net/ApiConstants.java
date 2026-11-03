@@ -3,7 +3,7 @@ package com.strongly.strongly.net;
 public final class ApiConstants {
     private ApiConstants() {}
 
-    public static final String BASE_URL = "https://2846z2xn-5001.inc1.devtunnels.ms/api/v1";
+    public static final String BASE_URL = "https://strongly.be.greewebsolutions.com/api/v1";
 
     public static final String HEALTH = "/health";
     public static final String GUEST_LOGIN = "/auth/guest";

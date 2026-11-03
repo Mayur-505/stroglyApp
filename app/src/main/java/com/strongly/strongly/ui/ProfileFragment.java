@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,12 +25,11 @@ import com.strongly.strongly.net.ApiConstants;
 import com.strongly.strongly.util.Session;
 import com.strongly.strongly.util.Tr;
 
-/** Profile tab: account banner or backup card, settings list, logout (Flutter's ProfileScreen). */
+/** Profile tab: account banner or backup card, settings list, logout. */
 public class ProfileFragment extends Fragment {
     private static final int LIME = Kit.LIME;
 
     private LinearLayout content;
-    private String renderedLanguage;
 
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle state) {
@@ -46,6 +46,10 @@ public class ProfileFragment extends Fragment {
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) render();
+    }
     public void onResume() {
         super.onResume();
         // returning from login / edit profile / language changes
@@ -110,18 +114,29 @@ public class ProfileFragment extends Fragment {
         card.addView(Kit.text(c, "Synchronize your data", 13, 400, 0x61FFFFFF), Kit.lp(c, -2, -2, 0, 4, 0, 0));
 
         LinearLayout row = new LinearLayout(c);
+
         TextView login = Kit.text(c, "Log In", 15, 700, 0xFF111113);
         login.setGravity(Gravity.CENTER);
         login.setBackground(Kit.rounded(c, LIME, 12));
-        login.setOnClickListener(v -> startActivity(new Intent(c, LoginActivity.class)));
+        login.setOnClickListener(v -> {
+            Intent i = new Intent(c, AuthActivity.class);
+            i.putExtra(AuthActivity.EXTRA_INITIAL_IS_LOGIN, true);
+            startActivity(i);
+        });
         row.addView(login, new LinearLayout.LayoutParams(0, Kit.dp(c, 46), 1f));
-        TextView signin = Kit.text(c, "Sign In", 15, 700, 0xFFFFFFFF);
-        signin.setGravity(Gravity.CENTER);
-        signin.setBackground(Kit.rounded(c, 0xFF38383B, 12, 1, 0x1FFFFFFF));
-        signin.setOnClickListener(v -> startActivity(new Intent(c, SignupActivity.class)));
+
+        TextView signup = Kit.text(c, "Sign Up", 15, 700, 0xFFFFFFFF);
+        signup.setGravity(Gravity.CENTER);
+        signup.setBackground(Kit.rounded(c, 0xFF38383B, 12, 1, 0x1FFFFFFF));
+        signup.setOnClickListener(v -> {
+            Intent i = new Intent(c, AuthActivity.class);
+            i.putExtra(AuthActivity.EXTRA_INITIAL_IS_LOGIN, false);
+            startActivity(i);
+        });
         LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(0, Kit.dp(c, 46), 1f);
         sp.setMarginStart(Kit.dp(c, 12));
-        row.addView(signin, sp);
+        row.addView(signup, sp);
+
         card.addView(row, Kit.lp(c, -1, -2, 0, 16, 0, 0));
         return card;
     }
@@ -153,6 +168,11 @@ public class ProfileFragment extends Fragment {
         LinearLayout col = new LinearLayout(c);
         col.setOrientation(LinearLayout.VERTICAL);
         col.addView(Kit.text(c, name, 17, 800, 0xFFFFFFFF));
+        String email = Session.userEmail();
+        if (email != null && !email.isEmpty()) {
+            col.addView(Kit.text(c, email, 12.5f, 400, 0x8AFFFFFF), Kit.lp(c, -2, -2, 0, 2, 0, 0));
+        }
+
         LinearLayout pill = new LinearLayout(c);
         pill.setGravity(Gravity.CENTER_VERTICAL);
         pill.setBackground(Kit.rounded(c, 0x1FA3D223, 10));
@@ -177,14 +197,38 @@ public class ProfileFragment extends Fragment {
         card.setPadding(Kit.dp(c, 16), Kit.dp(c, 12), Kit.dp(c, 16), Kit.dp(c, 12));
 
         String[][] items = guest
-                ? new String[][]{{"login_signup", "Log In / Sign Up"}, {"language", "Language"}}
-                : new String[][]{{"my_profile", "My Profile"}, {"language", "Language"}, {"logout", "Log Out"}};
+                ? new String[][]{
+                        {"login_signup", "Log In / Sign Up"},
+                        {"language", "Language"},
+                        {"privacy_policy", "Privacy Policy"},
+                        {"terms_conditions", "Terms & Conditions"}
+                }
+                : new String[][]{
+                        {"my_profile", "My Profile"},
+                        {"language", "Language"},
+                        {"privacy_policy", "Privacy Policy"},
+                        {"terms_conditions", "Terms & Conditions"},
+                        {"logout", "Log Out"}
+                };
+
         int[] icons = guest
-                ? new int[]{Icons.MOOD_ROUNDED, Icons.TRANSLATE_ROUNDED}
-                : new int[]{Icons.MOOD_ROUNDED, Icons.TRANSLATE_ROUNDED, Icons.LOGOUT_ROUNDED};
+                ? new int[]{
+                        Icons.MOOD_ROUNDED,
+                        Icons.TRANSLATE_ROUNDED,
+                        Icons.SHIELD_ROUNDED,
+                        Icons.DESCRIPTION_OUTLINED
+                }
+                : new int[]{
+                        Icons.PERSON_ROUNDED,
+                        Icons.TRANSLATE_ROUNDED,
+                        Icons.SHIELD_ROUNDED,
+                        Icons.DESCRIPTION_OUTLINED,
+                        Icons.LOGOUT_ROUNDED
+                };
+
         for (int i = 0; i < items.length; i++) {
             String id = items[i][0];
-            boolean danger = id.equals("logout") || id.equals("delete_account");
+            boolean danger = id.equals("logout");
             LinearLayout row = new LinearLayout(c);
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(0, Kit.dp(c, 4), 0, Kit.dp(c, 4));
@@ -205,7 +249,7 @@ public class ProfileFragment extends Fragment {
         Context c = requireContext();
         switch (id) {
             case "login_signup":
-                startActivity(new Intent(c, LoginActivity.class));
+                startActivity(new Intent(c, AuthActivity.class));
                 break;
             case "my_profile":
                 startActivity(new Intent(c, EditProfileActivity.class));
@@ -216,6 +260,12 @@ public class ProfileFragment extends Fragment {
                 startActivity(i);
                 break;
             }
+            case "privacy_policy":
+                startActivity(new Intent(c, PrivacyPolicyActivity.class));
+                break;
+            case "terms_conditions":
+                startActivity(new Intent(c, TermsConditionsActivity.class));
+                break;
             case "logout":
                 Dialogs.danger(c, Icons.LOGOUT_ROUNDED, "Log Out",
                         "Are you sure you want to log out of your account? Your progress will remain saved in your account.",
@@ -242,10 +292,8 @@ public class ProfileFragment extends Fragment {
                     }
                 }
                 if (!isAdded()) return;
-                android.widget.Toast.makeText(requireContext(), "Logged out successfully", android.widget.Toast.LENGTH_SHORT).show();
-                Intent home = new Intent(requireContext(), HomeActivity.class);
-                home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(home);
+                Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
+                render();
             });
         });
     }

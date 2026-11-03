@@ -79,6 +79,12 @@ public final class Icons {
     public static final int MOOD_ROUNDED = 0xf8d7;
     public static final int PERSON_ROUNDED = 0xf0071;
     public static final int PRIVACY_TIP_OUTLINED = 0xf2d0;
+    public static final int SHIELD_ROUNDED = 0xf016e;
+    public static final int DESCRIPTION_OUTLINED = 0xef74;
+    public static final int WARNING_ROUNDED = 0xf0289;
+    public static final int POLICY_OUTLINED = 0xf2bb;
+    public static final int LANGUAGE_ROUNDED = 0xf83a;
+    public static final int CHECK_CIRCLE_OUTLINE_ROUNDED = 0xf634;
     public static final int RADIO_CHECKED_ROUNDED = 0xf00d7;
     public static final int RADIO_OFF_ROUNDED = 0xf00d8;
     public static final int TRANSLATE_ROUNDED = 0xf0250;

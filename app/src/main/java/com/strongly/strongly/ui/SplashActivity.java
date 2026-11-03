@@ -6,8 +6,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.gson.JsonObject;
 import com.strongly.strongly.R;
@@ -26,11 +28,30 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         UiUtil.edgeToEdge(this);
 
+        TextView logo = findViewById(R.id.logo_text);
+        if (logo != null) {
+            logo.setTypeface(ResourcesCompat.getFont(this, R.font.lozange_no_commercial));
+        }
+        TextView tagline = findViewById(R.id.tagline_text);
+        if (tagline != null) {
+            UiUtil.weight(tagline, 400);
+        }
+
         View content = findViewById(R.id.splash_content);
-        AlphaAnimation fade = new AlphaAnimation(0f, 1f);
-        fade.setDuration(900);
-        fade.setFillAfter(true);
-        content.startAnimation(fade);
+        if (content != null) {
+            AlphaAnimation fade = new AlphaAnimation(0f, 1f);
+            fade.setDuration(900);
+            fade.setFillAfter(true);
+            content.startAnimation(fade);
+        }
+
+        View loader = findViewById(R.id.splash_loader);
+        if (loader != null) {
+            AlphaAnimation loaderFade = new AlphaAnimation(0f, 1f);
+            loaderFade.setDuration(900);
+            loaderFade.setFillAfter(true);
+            loader.startAnimation(loaderFade);
+        }
 
         if (!Session.isAuthenticated()) {
             JsonObject body = new JsonObject();

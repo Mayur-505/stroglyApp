@@ -33,7 +33,8 @@
         android:scaleType="fitStart"
         android:src="@drawable/athlete_splash"
         app:layout_constraintBottom_toBottomOf="@id/fade_end"
-        app:layout_constraintTop_toTopOf="@id/img_top" />
+        app:layout_constraintTop_toTopOf="@id/img_top"
+        android:contentDescription="@null" />
 
     <View
         android:layout_width="match_parent"
@@ -49,36 +50,61 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHeight_percent="0.38" />
 
+    <!-- Logo and Tagline Column placed exactly as in Flutter (bottom ~22%) -->
     <LinearLayout
         android:id="@+id/splash_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_horizontal|bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingBottom="96dp">
+        app:layout_constraintBottom_toTopOf="@+id/guideline_logo_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <TextView
+            android:id="@+id/logo_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/lozange_no_commercial"
             android:text="STRONGLY"
             android:textColor="@color/primary_lime"
-            android:textSize="60sp" />
+            android:textSize="60sp"
+            android:includeFontPadding="false" />
 
         <TextView
+            android:id="@+id/tagline_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:letterSpacing="0.013"
             android:text="Become Your Strongest."
             android:textColor="@color/text_white"
-            android:textSize="15sp" />
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
-            android:layout_marginTop="56dp"
-            android:indeterminateTint="@color/text_white" />
+            android:textSize="15sp"
+            android:includeFontPadding="false" />
     </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_logo_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <!-- Custom Arc Loader at bottom ~8% (matching dev branch) -->
+    <ProgressBar
+        android:id="@+id/splash_loader"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/text_white"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_loader_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_loader_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.92" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

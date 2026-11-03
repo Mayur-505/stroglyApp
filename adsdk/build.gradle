@@ -1,0 +1,41 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace "com.ads.sdk.adssdk"
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 26
+        multiDexEnabled true
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.annotation:annotation:1.8.2'
+    api 'androidx.multidex:multidex:2.0.1'
+    api 'androidx.lifecycle:lifecycle-process:2.8.7'
+    implementation 'com.intuit.sdp:sdp-android:1.1.1'
+
+    // AdMob
+    api 'com.google.android.gms:play-services-ads:25.4.0'
+
+    // Facebook Audience Network (referenced by the SDK's ad classes; unused with AdsType = 1)
+    implementation 'com.facebook.android:audience-network-sdk:6.17.0'
+
+    // affiliate fallback creatives
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+
+    // Facebook Shimmer
+    api 'com.facebook.shimmer:shimmer:0.5.0'
+}

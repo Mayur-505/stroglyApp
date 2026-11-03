@@ -1,15 +1,17 @@
 package com.strongly.strongly;
 
-import android.app.Application;
+import com.ads.sdk.adssdk.AppManifestClass;
 
 import com.strongly.strongly.util.Prefs;
 import com.strongly.strongly.util.Tr;
 
-public class StronglyApp extends Application {
+// AppManifestClass (adsdk) initializes Mobile Ads and the app-open ad manager
+public class StronglyApp extends AppManifestClass {
     @Override
     public void onCreate() {
         super.onCreate();
         Prefs.init(this);
+        com.strongly.strongly.ads.Ads.attach(this);
         Tr.init(this);
         com.strongly.strongly.billing.PremiumService.get().init(this);
         // Arabic reads right-to-left: set the direction for every screen as it is created

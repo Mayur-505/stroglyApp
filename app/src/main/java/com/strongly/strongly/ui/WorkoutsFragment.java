@@ -144,6 +144,8 @@ public class WorkoutsFragment extends Fragment {
             if (!row2.isEmpty()) rows.addView(cardRow(c, row2, 0), Kit.lp(c, -2, -2, 0, 12, 0, 0));
             content.addView(hScroll(c, rows));
             content.addView(new View(c), new LinearLayout.LayoutParams(-1, Kit.dp(c, 26)));
+            adSlot = com.strongly.strongly.ads.Ads.nativeSlot(requireActivity(), adSlot);
+            content.addView(adSlot, Kit.lp(c, -1, -2, 20, 0, 20, 26));
         }
         if (!targets.isEmpty()) {
             section(c, Tr.t("focus_on_target"));
@@ -159,6 +161,8 @@ public class WorkoutsFragment extends Fragment {
             content.addView(hScroll(c, row));
         }
     }
+
+    private android.widget.FrameLayout adSlot;
 
     private void section(Context c, String title) {
         content.addView(Kit.text(c, title, 18, 700, 0xFFFFFFFF), Kit.lp(c, -2, -2, 20, 0, 20, 14));

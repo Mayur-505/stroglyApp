@@ -174,6 +174,13 @@ public class HomeFragment extends Fragment {
         return p;
     }
 
+    private FrameLayout adSlot;
+
+    private void addNativeAd() {
+        adSlot = com.strongly.strongly.ads.Ads.nativeSlot(requireActivity(), adSlot);
+        content.addView(adSlot, lp(-1, -2, 20, 0, 20, 14));
+    }
+
     private void render() {
         content.removeAllViews();
         boolean empty = featured == null && categories.isEmpty() && recommended.isEmpty();
@@ -232,7 +239,11 @@ public class HomeFragment extends Fragment {
             header.addView(all);
             content.addView(header, lp(-1, -2, 20, 24, 20, 14));
 
-            for (WorkoutItem w : recommended) content.addView(recommendedCard(w), lp(-1, -2, 20, 0, 20, 14));
+            int n = 0;
+            for (WorkoutItem w : recommended) {
+                content.addView(recommendedCard(w), lp(-1, -2, 20, 0, 20, 14));
+                if (++n == 2 || (n == recommended.size() && n < 2)) addNativeAd(); // native ad inside the list
+            }
         }
         content.addView(new View(requireContext()), lp(-1, dp(10), 0, 0, 0, 0));
     }

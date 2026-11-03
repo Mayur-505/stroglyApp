@@ -152,6 +152,8 @@ public class ProgressFragment extends Fragment {
         GoPremiumActivity.open(requireContext());
     }
 
+    private android.widget.FrameLayout adSlot;
+
     private void render() {
         Context c = requireContext();
         content.removeAllViews();
@@ -179,6 +181,9 @@ public class ProgressFragment extends Fragment {
         row2.addView(ProgressCards.stepsCard(c, currentSteps, targetSteps, v -> openDetail(false)), Kit.lp(c, 0, -2, 12, 0, 0, 0));
         ((LinearLayout.LayoutParams) row2.getChildAt(1).getLayoutParams()).weight = 1f;
         content.addView(row2, Kit.lp(c, -1, -2, 0, 12, 0, 0));
+
+        adSlot = com.strongly.strongly.ads.Ads.nativeSlot(requireActivity(), adSlot);
+        content.addView(adSlot, Kit.lp(c, -1, -2, 0, 14, 0, 0));
 
         content.addView(ProgressCards.premiumLock(c, ProgressCards.barChart(c, workoutChart, v -> openDetail(false)),
                 chartsLocked, this::unlockCharts), Kit.lp(c, -1, -2, 0, 14, 0, 0));

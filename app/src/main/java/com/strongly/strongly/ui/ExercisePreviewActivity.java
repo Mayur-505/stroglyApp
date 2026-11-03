@@ -129,11 +129,15 @@ public class ExercisePreviewActivity extends AppCompatActivity {
         sv.addView(col);
         page.addView(sv, new LinearLayout.LayoutParams(-1, 0, 1f));
 
-        TextView start = Kit.text(this, "Start", 16, 800, 0xFF141416);
+        // same pill as the plan screen's "Ready to go!" button: fixed 54dp, label centred in a container
+        TextView label = Kit.text(this, "Start", 16, 800, 0xFF141416);
+        label.setIncludeFontPadding(false);
+        LinearLayout start = new LinearLayout(this);
         start.setGravity(Gravity.CENTER);
-        start.setBackground(Kit.rounded(this, LIME, 26));
-        start.setOnClickListener(v -> startWorkout());
-        page.addView(start, Kit.lp(this, -1, dp(52), 20, 8, 20, 16));
+        start.setBackground(Kit.rounded(this, LIME, 27));
+        start.addView(label);
+        start.setOnClickListener(v -> com.strongly.strongly.ads.Ads.showRewarded(this, this::startWorkout));
+        page.addView(start, Kit.lp(this, -1, dp(54), 20, 12, 20, 16));
     }
 
     private View bullet(String text) {

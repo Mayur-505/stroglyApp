@@ -27,6 +27,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         UiUtil.edgeToEdge(this);
+        com.strongly.strongly.ads.Ads.init(this);
 
         TextView logo = findViewById(R.id.logo_text);
         if (logo != null) {
@@ -69,12 +70,21 @@ public class SplashActivity extends AppCompatActivity {
         handler.postDelayed(navigate, 2800);
     }
 
+    private int waitedForAd = 0;
+
     private void navigate() {
+        // give the launch app-open ad a few seconds to load
+        if (!com.strongly.strongly.ads.Ads.launchAdReady() && waitedForAd < 3500) {
+            waitedForAd += 400;
+            handler.postDelayed(navigate, 400);
+            return;
+        }
         boolean done = Prefs.getBool("onboarding_completed", false);
         Intent i = new Intent(this, done ? HomeActivity.class : OnboardingActivity.class);
         startActivity(i);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
+        com.strongly.strongly.ads.Ads.showLaunchAppOpen();
     }
 
     @Override

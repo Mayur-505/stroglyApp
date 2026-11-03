@@ -70,6 +70,8 @@ public class ProfileFragment extends Fragment {
 
     // ------------------------------------------------------------------ rendering
 
+    private android.widget.FrameLayout adSlot;
+
     private void render() {
         if (!isAdded()) return;
         Context c = requireContext();
@@ -101,6 +103,8 @@ public class ProfileFragment extends Fragment {
             content.addView(accountBanner(c, userName), Kit.lp(c, -1, -2, 0, 20, 0, 24));
         }
 
+        adSlot = com.strongly.strongly.ads.Ads.nativeSlot(requireActivity(), adSlot);
+        content.addView(adSlot, Kit.lp(c, -1, -2, 0, 0, 0, 20));
         content.addView(Kit.text(c, Tr.t("setting"), 18, 700, 0xFFFFFFFF), Kit.lp(c, -2, -2, 0, 0, 0, 12));
         content.addView(settingsCard(c, guest));
     }

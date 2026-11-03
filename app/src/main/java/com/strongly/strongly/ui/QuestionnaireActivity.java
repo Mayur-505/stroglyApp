@@ -141,6 +141,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
     // ------------------------------------------------------------------ rendering
 
     private void renderStep() {
+        com.strongly.strongly.ads.Ads.refreshNative(this); // a fresh native ad on every question
         body.removeAllViews();
         body.setAlpha(0f);
         String sub = null;

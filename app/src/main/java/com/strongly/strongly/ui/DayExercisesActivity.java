@@ -300,10 +300,13 @@ public class DayExercisesActivity extends AppCompatActivity {
         if (!inProgress) {
             TextView start = Kit.text(this, "Start", 16, 800, 0xFF141416);
             start.setGravity(Gravity.CENTER);
-            start.setBackground(Kit.rounded(this, LIME, 26));
+            start.setIncludeFontPadding(false);
+            // render() adds this with a wrap-content height, which overrode a fixed LayoutParams height and left the
+            // button only as tall as its text: the height has to come from the view itself
+            start.setMinHeight(dp(54));
+            start.setBackground(Kit.rounded(this, LIME, 27));
             start.setElevation(dp(8));
             start.setOnClickListener(v -> handleStart());
-            start.setLayoutParams(new FrameLayout.LayoutParams(-1, dp(52)));
             return start;
         }
         LinearLayout row = new LinearLayout(this);

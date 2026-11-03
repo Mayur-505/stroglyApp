@@ -20,6 +20,7 @@ public final class ApiConstants {
     public static final String UPDATE_LANGUAGE = "/user/language";
     public static final String BACKUP = "/user/backup";
     public static final String RESTORE = "/user/restore";
+    public static final String DELETE_ACCOUNT = "/user/account";
     public static final String UPLOAD_PHOTO = "/upload/photo";
     public static final String HOME_FEED = "/home/feed";
     public static final String EXPLORE_WORKOUTS = "/workouts/explore";

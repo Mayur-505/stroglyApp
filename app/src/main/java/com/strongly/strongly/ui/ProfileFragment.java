@@ -25,7 +25,7 @@ import com.strongly.strongly.net.ApiConstants;
 import com.strongly.strongly.util.Session;
 import com.strongly.strongly.util.Tr;
 
-/** Profile tab: account banner or backup card, settings list, logout. */
+/** Profile tab: account banner or backup card, settings list, logout, delete account. */
 public class ProfileFragment extends Fragment {
     private static final int LIME = Kit.LIME;
 
@@ -212,7 +212,8 @@ public class ProfileFragment extends Fragment {
                         {"language", "Language"},
                         {"privacy_policy", "Privacy Policy"},
                         {"terms_conditions", "Terms & Conditions"},
-                        {"logout", "Log Out"}
+                        {"logout", "Log Out"},
+                        {"delete_account", "Delete Account"}
                 };
 
         int[] icons = guest
@@ -227,12 +228,13 @@ public class ProfileFragment extends Fragment {
                         Icons.TRANSLATE_ROUNDED,
                         Icons.SHIELD_ROUNDED,
                         Icons.DESCRIPTION_OUTLINED,
-                        Icons.LOGOUT_ROUNDED
+                        Icons.LOGOUT_ROUNDED,
+                        Icons.DELETE_FOREVER_ROUNDED
                 };
 
         for (int i = 0; i < items.length; i++) {
             String id = items[i][0];
-            boolean danger = id.equals("logout");
+            boolean danger = id.equals("logout") || id.equals("delete_account");
             LinearLayout row = new LinearLayout(c);
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(0, Kit.dp(c, 4), 0, Kit.dp(c, 4));
@@ -275,6 +277,15 @@ public class ProfileFragment extends Fragment {
                         "Are you sure you want to log out of your account? Your progress will remain saved in your account.",
                         "Log Out", this::logout);
                 break;
+            case "delete_account":
+                Dialogs.danger(c, Icons.DELETE_FOREVER_ROUNDED,
+                        !Tr.t("delete_account_title").equals("delete_account_title") ? Tr.t("delete_account_title") : "Delete Account",
+                        !Tr.t("delete_account_message").equals("delete_account_message")
+                                ? Tr.t("delete_account_message")
+                                : "Are you sure you want to delete your account? All your workout history, progress data, and profile information will be permanently deleted. This action cannot be undone.",
+                        !Tr.t("delete_account_confirm").equals("delete_account_confirm") ? Tr.t("delete_account_confirm") : "Delete Permanently",
+                        this::deleteAccount);
+                break;
             default:
                 break;
         }
@@ -299,6 +310,36 @@ public class ProfileFragment extends Fragment {
                 Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
                 render();
             });
+        });
+    }
+
+    private void deleteAccount() {
+        ApiClient.get().delete(ApiConstants.DELETE_ACCOUNT, r -> {
+            if (!isAdded()) return;
+            if (r.isOk()) {
+                Session.clear();
+                // re-initialize a clean guest session
+                JsonObject body = new JsonObject();
+                body.addProperty("language", Session.language());
+                ApiClient.get().post(ApiConstants.GUEST_LOGIN, body, g -> {
+                    if (g.isOk()) {
+                        JsonObject d = g.dataObject();
+                        if (d.has("token") && d.has("user") && d.get("user").isJsonObject()) {
+                            JsonObject u = d.getAsJsonObject("user");
+                            Session.save(d.get("token").getAsString(), UiUtil.str(u, "_id") != null ? UiUtil.str(u, "_id") : "",
+                                    true, UiUtil.str(u, "name"), null, null);
+                        }
+                    }
+                    if (!isAdded()) return;
+                    String successMsg = !Tr.t("account_deleted_success").equals("account_deleted_success")
+                            ? Tr.t("account_deleted_success") : "Account deleted successfully";
+                    Toast.makeText(requireContext(), successMsg, Toast.LENGTH_LONG).show();
+                    render();
+                });
+            } else {
+                String errorMsg = r.message != null && !r.message.isEmpty() ? r.message : "Failed to delete account. Please try again.";
+                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }

@@ -221,7 +221,8 @@ public final class PremiumService {
             for (String id : ids) products.add(QueryProductDetailsParams.Product.newBuilder()
                     .setProductId(id).setProductType(BillingClient.ProductType.SUBS).build());
             billing.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(products).build(),
-                    (result, details) -> main.post(() -> {
+                    (result, queried) -> main.post(() -> {
+                        List<ProductDetails> details = queried == null ? null : queried.getProductDetailsList();
                         if (result.getResponseCode() == BillingClient.BillingResponseCode.OK && details != null)
                             for (Plan p : plans.plans) match(p, details);
                         done.run();

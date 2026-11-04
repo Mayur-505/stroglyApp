@@ -51,10 +51,19 @@ public class GoPremiumActivity extends AppCompatActivity {
         root = new FrameLayout(this);
         root.setBackgroundColor(INK);
         setContentView(root);
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() { closeWithAd(); }
+        });
         premium.addListener(onPremiumChanged);
         premium.refreshStatus(null);
         render();
         fetchPlans();
+    }
+
+    /** Closing the paywall (without buying) shows an interstitial, then leaves the screen. */
+    private void closeWithAd() {
+        if (isFinishing()) return;
+        com.strongly.strongly.ads.Ads.showInterstitialThen(this, this::finish);
     }
 
     @Override
@@ -255,7 +264,7 @@ public class GoPremiumActivity extends AppCompatActivity {
         hero.addView(shade, new FrameLayout.LayoutParams(-1, dp(360)));
         TextView back = Icons.view(this, Icons.ARROW_BACK_ROUNDED, 20, 0xFFFFFFFF);
         back.setBackground(Kit.rounded(this, 0x80000000, 19, 1, 0x1FFFFFFF));
-        back.setOnClickListener(v -> finish());
+        back.setOnClickListener(v -> closeWithAd());
         FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(dp(38), dp(38), Gravity.TOP | Gravity.START);
         bp.topMargin = dp(48);
         bp.setMarginStart(dp(20));

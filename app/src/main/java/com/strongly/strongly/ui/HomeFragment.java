@@ -174,15 +174,21 @@ public class HomeFragment extends Fragment {
         return p;
     }
 
-    private FrameLayout adSlot;
+    // Slots are kept between renders so rebuilding the list never requests the same ads again.
+    private final java.util.List<FrameLayout> adSlots = new java.util.ArrayList<>();
+    private int adIndex;
 
-    private void addNativeAd() {
-        adSlot = com.strongly.strongly.ads.Ads.nativeSlot(requireActivity(), adSlot);
-        content.addView(adSlot, lp(-1, -2, 20, 0, 20, 14));
+    private void addNativeAd(int top) {
+        FrameLayout existing = adIndex < adSlots.size() ? adSlots.get(adIndex) : null;
+        FrameLayout slot = com.strongly.strongly.ads.Ads.nativeSlot(requireActivity(), existing);
+        if (existing == null) adSlots.add(slot);
+        adIndex++;
+        content.addView(slot, lp(-1, -2, 20, top, 20, 14));
     }
 
     private void render() {
         content.removeAllViews();
+        adIndex = 0;
         boolean empty = featured == null && categories.isEmpty() && recommended.isEmpty();
 
         TextView logo = new TextView(requireContext());
@@ -222,9 +228,15 @@ public class HomeFragment extends Fragment {
             content.addView(col, lp(-1, -2, 24, 40, 24, 40));
         }
 
-        if (featured != null) content.addView(featuredCard(featured), lp(-1, -2, 20, 0, 20, 0));
+        if (featured != null) {
+            content.addView(featuredCard(featured), lp(-1, -2, 20, 0, 20, 0));
+            addNativeAd(18); // right under the featured workout
+        }
 
-        if (!categories.isEmpty()) content.addView(categoriesSection(), lp(-1, -2, 0, 24, 0, 0));
+        if (!categories.isEmpty()) {
+            content.addView(categoriesSection(), lp(-1, -2, 0, 24, 0, 0));
+            addNativeAd(18); // under the categories
+        }
 
         if (!recommended.isEmpty()) {
             LinearLayout header = new LinearLayout(requireContext());
@@ -242,7 +254,8 @@ public class HomeFragment extends Fragment {
             int n = 0;
             for (WorkoutItem w : recommended) {
                 content.addView(recommendedCard(w), lp(-1, -2, 20, 0, 20, 14));
-                if (++n == 2 || (n == recommended.size() && n < 2)) addNativeAd(); // native ad inside the list
+                // a native ad after the 2nd workout, then after every 3 more (and at the end of a short list)
+                if (++n == 2 || (n > 2 && (n - 2) % 3 == 0) || (n == recommended.size() && n < 2)) addNativeAd(0);
             }
         }
         content.addView(new View(requireContext()), lp(-1, dp(10), 0, 0, 0, 0));

@@ -28,6 +28,7 @@ import com.ads.sdk.adssdk.InterstitialAd;
 import com.ads.sdk.adssdk.RewardAd;
 import com.strongly.strongly.billing.PremiumService;
 import com.strongly.strongly.ui.ActiveWorkoutActivity;
+import com.strongly.strongly.ui.GenderActivity;
 import com.strongly.strongly.ui.HomeActivity;
 import com.strongly.strongly.ui.LanguageActivity;
 import com.strongly.strongly.ui.OnboardingActivity;
@@ -73,11 +74,13 @@ public final class Ads {
 
     private static boolean excluded(Activity a) {
         return a instanceof SplashActivity || a instanceof ActiveWorkoutActivity
+                || a instanceof com.strongly.strongly.ui.GoPremiumActivity // the paywall stays ad-free
                 || a instanceof com.google.android.gms.ads.AdActivity; // full-screen ads get no footer ad
     }
 
     private static boolean wantsNative(Activity a) {
-        return a instanceof OnboardingActivity || a instanceof LanguageActivity || a instanceof QuestionnaireActivity;
+        return a instanceof OnboardingActivity || a instanceof LanguageActivity || a instanceof GenderActivity
+                || a instanceof QuestionnaireActivity;
     }
 
     /** Registers lifecycle hooks. Call once from Application.onCreate. */
@@ -141,6 +144,8 @@ public final class Ads {
                 configured = true;
                 Activity host = resumed != null ? resumed : activity;
                 GetFirebasedata.applyConfigJson(host, json); // preloads one interstitial, reward and app-open
+                preloadNative(host, false); // language screen's full native
+                preloadNative(host, true);  // compact native for onboarding, gender and questions
                 if (resumed != null) { // a screen that opened before the config arrived
                     loadBanner(resumed);
                     refreshNative(resumed);
@@ -219,8 +224,10 @@ public final class Ads {
         ViewGroup content = a.findViewById(android.R.id.content);
         if (content == null || content.getChildCount() == 0 || content.findViewWithTag(TAG_WRAPPER) != null) return;
 
-        // language: native above the continue button; questions: native in the middle, above the options
-        int anchorId = a instanceof LanguageActivity ? com.strongly.strongly.R.id.continue_btn
+        // language / gender: native above the continue button; onboarding: between the title and its text;
+        // questions: native in the middle, above the options
+        int anchorId = a instanceof LanguageActivity || a instanceof GenderActivity ? com.strongly.strongly.R.id.continue_btn
+                : a instanceof OnboardingActivity ? com.strongly.strongly.R.id.desc
                 : a instanceof QuestionnaireActivity ? com.strongly.strongly.R.id.scroll : 0;
         if (anchorId != 0) {
             if (content.findViewWithTag("ads_native") != null) return;
@@ -292,9 +299,58 @@ public final class Ads {
     private static void loadNative(Activity a) {
         ViewGroup box = box(a, "ads_native");
         if (box == null || !enabled()) return;
-        // 1 = full native, 2 = compact (question screens keep the options visible)
-        GetFirebasedata.SmallnativeorBignative = a instanceof QuestionnaireActivity ? 2 : 1;
-        AdvanceNativeAd.ShowNativeAd(a, box);
+        // full native on the language screen; compact on onboarding, gender and questions (the content stays visible)
+        boolean compact = !(a instanceof LanguageActivity);
+        GetFirebasedata.SmallnativeorBignative = compact ? 2 : 1;
+
+        com.google.android.gms.ads.nativead.NativeAd ready = takePreloaded(compact);
+        // the flow is onboarding -> language -> gender -> questions: keep the next screens' ads loading
+        if (a instanceof OnboardingActivity) preloadNative(a, false);
+        preloadNative(a, true);
+
+        if (ready != null) {
+            if (compact) AdvanceNativeAd.LoadAdmobSmallnative(a, box, ready);
+            else AdvanceNativeAd.LoadAdmobnative(a, box, ready);
+            return;
+        }
+        AdvanceNativeAd.ShowNativeAd(a, box); // nothing preloaded yet: request it now
+    }
+
+    // one preloaded ad per size: [0] full (language), [1] compact (onboarding / gender / questions)
+    private static final com.google.android.gms.ads.nativead.NativeAd[] preloadedNative = new com.google.android.gms.ads.nativead.NativeAd[2];
+    private static final boolean[] preloadingNative = new boolean[2];
+
+    private static com.google.android.gms.ads.nativead.NativeAd takePreloaded(boolean compact) {
+        int i = compact ? 1 : 0;
+        com.google.android.gms.ads.nativead.NativeAd ad = preloadedNative[i];
+        preloadedNative[i] = null;
+        return ad;
+    }
+
+    /** Requests one native ad of the given size ahead of the screen that will show it. */
+    private static void preloadNative(Activity a, boolean compact) {
+        int i = compact ? 1 : 0;
+        if (!enabled() || preloadedNative[i] != null || preloadingNative[i]) return;
+        java.util.List<String> ids = compact ? AdvanceNativeAd.AdmobSmallarrayList : AdvanceNativeAd.AdmobarrayList;
+        if (ids == null || ids.isEmpty()) return;
+        int next = compact ? AdvanceNativeAd.AdintercountAdmobSmall : AdvanceNativeAd.AdintercountAdmob;
+        if (next >= ids.size()) next = 0;
+        String unit = ids.get(next);
+        next = (next + 1) % ids.size();
+        if (compact) AdvanceNativeAd.AdintercountAdmobSmall = next; else AdvanceNativeAd.AdintercountAdmob = next;
+        preloadingNative[i] = true;
+        new com.google.android.gms.ads.AdLoader.Builder(a.getApplicationContext(), unit)
+                .forNativeAd(ad -> {
+                    preloadingNative[i] = false;
+                    if (preloadedNative[i] != null) preloadedNative[i].destroy();
+                    preloadedNative[i] = ad;
+                })
+                .withAdListener(new AdListener() {
+                    @Override public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError e) {
+                        preloadingNative[i] = false;
+                    }
+                })
+                .build().loadAd(new AdRequest.Builder().build());
     }
 
     /**
@@ -376,6 +432,20 @@ public final class Ads {
         a.getWindow().getDecorView().postDelayed(() -> {
             if (!rewardActive) InterstitialAd.ShowAdmobIntersrtitial(a); // the tap may have been "Start"
         }, 150);
+    }
+
+    /**
+     * Shows an interstitial right now (outside the tap counting, e.g. when the premium screen is closed) and runs
+     * {@code then} once it is dismissed. When ads are off or none is ready, {@code then} runs immediately.
+     */
+    public static void showInterstitialThen(Activity a, Runnable then) {
+        if (!enabled() || !InterstitialAd.isAdmobInterstitialReady()) {
+            if (enabled()) InterstitialAd.LoadAdmobInterstitial(a); // have one ready next time
+            then.run();
+            return;
+        }
+        lastInterstitialAt = System.currentTimeMillis();
+        InterstitialAd.ShowAdmobIntersrtitial2(a, then);
     }
 
     // ------------------------------------------------------------------ rewarded (Start)

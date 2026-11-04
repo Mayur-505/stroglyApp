@@ -85,8 +85,9 @@ public final class DayCard {
         } else {
             card.addView(Icons.view(c, Icons.LOCK_ROUNDED, 20, 0x4DFFFFFF));
         }
-        // Flutter's WorkoutDayCard only reacts to taps when the day is unlocked
+        // unlocked days open; a locked day (lock icon) opens the premium screen for free users
         if (d.isUnlocked) card.setOnClickListener(onTap);
+        else card.setOnClickListener(v -> GoPremiumActivity.open(c));
         return card;
     }
 

@@ -51,7 +51,19 @@ public class HomeActivity extends AppCompatActivity {
         }
         buildNav();
         render();
+
+        // every app open: the premium screen comes before the home screen (premium users skip it)
+        if (savedInstanceState == null && !paywallShown) {
+            paywallShown = true;
+            com.strongly.strongly.billing.PremiumService.get().refreshStatus(() -> {
+                if (!isFinishing() && !isDestroyed() && !com.strongly.strongly.billing.PremiumService.get().isPremium()) {
+                    startActivity(new android.content.Intent(this, GoPremiumActivity.class));
+                }
+            });
+        }
     }
+
+    private static boolean paywallShown; // once per app launch (process), not on every Home re-creation
 
     @Override
     protected void onResume() {

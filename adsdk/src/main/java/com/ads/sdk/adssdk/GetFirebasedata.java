@@ -114,18 +114,20 @@ public class GetFirebasedata {
             }
         }
 
-        ids(InterstitialAd.AdmobarrayList, o, hasJson, "InterAdx", TEST_INTERSTITIAL);
-        ids(AdvanceNativeAd.AdmobarrayList, o, hasJson, "NativeAdx", TEST_NATIVE);
-        ids(AdvanceNativeAd.AdmobSmallarrayList, o, hasJson, "NativeAdxSmall", TEST_NATIVE);
-        ids(BannerAd.AdmobarrayList, o, hasJson, "BannerAdx", TEST_BANNER);
-        ids(New_BannerAd.AdmobarrayList, o, hasJson, "New_BannerAdx", TEST_BANNER);
-        ids(RectangleBannerAd.AdmobarrayList, o, hasJson, "RBannerAdx", TEST_BANNER);
-        ids(RewardAd.AdmobarrayList, o, hasJson, "RewardAdx", TEST_REWARDED);
-        ids(InterstitialAd.FacebookarrayList, o, hasJson, "InterFB", null);
-        ids(AdvanceNativeAd.FacebookarrayList, o, hasJson, "NativeFB", null);
-        ids(BannerAd.FacebookarrayList, o, hasJson, "BannerFB", null);
-        ids(New_BannerAd.FacebookarrayList, o, hasJson, "New_BannerFB", null);
-        ids(RectangleBannerAd.FacebookarrayList, o, hasJson, "RBannerFB", null);
+        boolean live = hasJson; // the remote config's own (live) ad units
+
+        ids(InterstitialAd.AdmobarrayList, o, live, "InterAdx", TEST_INTERSTITIAL);
+        ids(AdvanceNativeAd.AdmobarrayList, o, live, "NativeAdx", TEST_NATIVE);
+        ids(AdvanceNativeAd.AdmobSmallarrayList, o, live, "NativeAdxSmall", TEST_NATIVE);
+        ids(BannerAd.AdmobarrayList, o, live, "BannerAdx", TEST_BANNER);
+        ids(New_BannerAd.AdmobarrayList, o, live, "New_BannerAdx", TEST_BANNER);
+        ids(RectangleBannerAd.AdmobarrayList, o, live, "RBannerAdx", TEST_BANNER);
+        ids(RewardAd.AdmobarrayList, o, live, "RewardAdx", TEST_REWARDED);
+        ids(InterstitialAd.FacebookarrayList, o, live, "InterFB", null);
+        ids(AdvanceNativeAd.FacebookarrayList, o, live, "NativeFB", null);
+        ids(BannerAd.FacebookarrayList, o, live, "BannerFB", null);
+        ids(New_BannerAd.FacebookarrayList, o, live, "New_BannerFB", null);
+        ids(RectangleBannerAd.FacebookarrayList, o, live, "RBannerFB", null);
         RewardAd.AdintercountAdmob = 0;
 
         AdsType = o.optInt("AdsType", 1); // 1 = AdMob only
@@ -175,8 +177,8 @@ public class GetFirebasedata {
         privacy_policy_url = o.optString("PrivacyPolicyURL", "");
         showNotnotButton = o.optBoolean("showNotnotButton", false);
 
-        String appOpen = hasJson ? o.optString("AppOpenAdmob", "") : TEST_APP_OPEN;
-        String splashOpen = hasJson ? o.optString("SplashAppOpenAdmob", "") : TEST_APP_OPEN;
+        String appOpen = live ? o.optString("AppOpenAdmob", "") : TEST_APP_OPEN;
+        String splashOpen = live ? o.optString("SplashAppOpenAdmob", "") : TEST_APP_OPEN;
         AppPreference.setPrefs("AdmobAppopenKey", appOpen);
         AppPreference.setPrefs("AdmobSplashAppopenKey", splashOpen);
 

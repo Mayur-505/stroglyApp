@@ -172,6 +172,7 @@ public class ScheduleActivity extends AppCompatActivity {
             return;
         }
         if (!day.isUnlocked) {
+            if (!com.strongly.strongly.billing.PremiumService.get().isPremium()) { GoPremiumActivity.open(this); return; }
             Kit.snack(root, "Complete previous days to unlock Day " + day.dayNumber + " 🔒", 0xB3FFFFFF, 1000);
             return;
         }

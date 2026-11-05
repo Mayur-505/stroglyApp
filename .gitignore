@@ -3,5 +3,4 @@ build/
 local.properties
 *.iml
 .idea/
-key.properties
-app/*.jks
+

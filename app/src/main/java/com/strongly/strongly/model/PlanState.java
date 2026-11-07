@@ -17,8 +17,18 @@ public final class PlanState {
     }
 
     private static final Map<String, Map<Integer, DayOverride>> STATE = new HashMap<>();
+    private static final java.util.Set<String> PREMIUM_PLANS = new java.util.HashSet<>();
     /** Day completions already sent to the server this session (Flutter's _submittedKeys). */
     public static final java.util.Set<String> SUBMITTED = new java.util.HashSet<>();
+
+    public static void setPremium(String planId, boolean isPremium) {
+        if (isPremium) PREMIUM_PLANS.add(planId);
+        else PREMIUM_PLANS.remove(planId);
+    }
+
+    public static boolean isPremium(String planId) {
+        return PREMIUM_PLANS.contains(planId);
+    }
 
     private static DayOverride get(String planId, int day) {
         Map<Integer, DayOverride> m = STATE.get(planId);
@@ -47,10 +57,13 @@ public final class PlanState {
         DayOverride d = get(planId, day);
         d.completed = true;
         d.progress = 1.0;
-        DayOverride next = get(planId, day + 1);
-        next.unlocked = true;
-        next.progress = 0.0;
-        next.completed = false;
+        // On premium plans for free accounts, Day 2 onwards requires premium to unlock!
+        if (com.strongly.strongly.billing.PremiumService.get().isPremium()) {
+            DayOverride next = get(planId, day + 1);
+            next.unlocked = true;
+            next.progress = 0.0;
+            next.completed = false;
+        }
     }
 
     public static PlanModels.Day apply(String planId, PlanModels.Day day) {

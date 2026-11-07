@@ -187,11 +187,6 @@ public class CategoryWorkoutsActivity extends AppCompatActivity {
 
     /** Flutter opens the unlock sheet (rewarded ad) for locked items, then the customization sheet. */
     private void onWorkoutTap(CategoryWorkoutItem w) {
-        if (w.isLocked()) {
-            // locked workouts open the premium screen (closing it shows an interstitial); a purchase unlocks them
-            startActivity(new android.content.Intent(this, GoPremiumActivity.class));
-            return;
-        }
         CustomizationSheet.show(this, w);
     }
 

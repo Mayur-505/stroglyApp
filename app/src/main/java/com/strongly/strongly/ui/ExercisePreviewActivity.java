@@ -115,12 +115,11 @@ public class ExercisePreviewActivity extends AppCompatActivity {
         FrameLayout card = new FrameLayout(this);
         card.setBackground(Kit.rounded(this, 0xFFFFFFFF, 20));
         card.setClipToOutline(true);
-        ImageView img = new ImageView(this);
-        img.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        ImageLoader.load(img, cur.imagePath, 0xFFFFFFFF);
-        card.addView(img, new FrameLayout.LayoutParams(-1, -1));
-        card.setPadding(dp(16), dp(16), dp(16), dp(16));
-        col.addView(card, Kit.lp(this, -1, dp(280), 0, 18, 0, 0));
+        ExerciseMotionView motionView = new ExerciseMotionView(this);
+        motionView.load(cur.imagePath, cur.getEndImagePath(), 0xFFFFFFFF);
+        card.addView(motionView, new FrameLayout.LayoutParams(-1, -1));
+        card.setPadding(dp(6), dp(6), dp(6), dp(6));
+        col.addView(card, Kit.lp(this, -1, dp(340), 0, 18, 0, 0));
 
         col.addView(Kit.text(this, cur.title, 18, 800, 0xFFFFFFFF), Kit.lp(this, -2, -2, 0, 24, 0, 12));
         for (String s : cur.instructions) col.addView(bullet(s));

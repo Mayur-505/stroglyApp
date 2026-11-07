@@ -59,6 +59,7 @@ public class PlanDetailActivity extends AppCompatActivity {
                 JsonObject o = r.data.getAsJsonObject();
                 if (o.has("data") && o.get("data").isJsonObject()) o = o.getAsJsonObject("data");
                 detail = PlanModels.Detail.fromJson(o);
+                PlanState.setPremium(planId, detail.isPremium);
             }
             loading = false;
             render();

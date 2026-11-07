@@ -5,7 +5,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.strongly.strongly.net.ApiConstants;
 
 import java.util.Locale;
 
@@ -25,11 +25,19 @@ public final class ImageLoader {
     public static void load(ImageView v, String path, int fallbackColor) {
         Context c = v.getContext();
         String p = path == null ? "" : path.trim();
+
+        // Automatically resolve relative paths (e.g. /uploads/...) with backend base URL
+        if (p.startsWith("/uploads/") || p.startsWith("uploads/")) {
+            String baseHost = ApiConstants.BASE_URL.replace("/api/v1", "");
+            String rel = p.startsWith("/") ? p : "/" + p;
+            p = baseHost + rel;
+        }
+
         if (p.startsWith("http://") || p.startsWith("https://")) {
             Glide.with(c).load(p)
                     .placeholder(new ColorDrawable(0xFF1B1B1D))
                     .error(new ColorDrawable(fallbackColor))
-                    .transition(DrawableTransitionOptions.withCrossFade(200))
+                    .dontAnimate()
                     .into(v);
             return;
         }

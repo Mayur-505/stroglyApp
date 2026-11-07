@@ -72,6 +72,7 @@ public class ScheduleActivity extends AppCompatActivity {
             if (o.has("data") && o.get("data").isJsonObject()) o = o.getAsJsonObject("data");
             planLocked = o.has("isLocked") && !o.get("isLocked").isJsonNull() && o.get("isLocked").getAsBoolean();
             detail = PlanModels.Detail.fromJson(o);
+            PlanState.setPremium(planId, detail.isPremium);
             if (!detail.days.isEmpty()) days = detail.days;
             render();
         });
@@ -167,12 +168,11 @@ public class ScheduleActivity extends AppCompatActivity {
     // ------------------------------------------------------------------ actions
 
     private void onDayTapped(PlanModels.Day day) {
-        if (planLocked) {
-            GoPremiumActivity.open(this);
-            return;
-        }
-        if (!day.isUnlocked) {
-            if (!com.strongly.strongly.billing.PremiumService.get().isPremium()) { GoPremiumActivity.open(this); return; }
+        if (day.dayNumber > 1 && !day.isUnlocked) {
+            if (!com.strongly.strongly.billing.PremiumService.get().isPremium()) {
+                GoPremiumActivity.open(this);
+                return;
+            }
             Kit.snack(root, "Complete previous days to unlock Day " + day.dayNumber + " 🔒", 0xB3FFFFFF, 1000);
             return;
         }

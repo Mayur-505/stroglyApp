@@ -87,7 +87,7 @@ public class ActiveWorkoutActivity extends AppCompatActivity {
 
     private int dp(float v) { return Kit.dp(this, v); }
 
-    private static boolean hasVideo(PlanModels.Exercise e) { return e != null && e.videoUrl != null && !e.videoUrl.isEmpty(); }
+    private static boolean hasVideo(PlanModels.Exercise e) { return false; }
 
     private static int parseDuration(String s) {
         try {
@@ -252,52 +252,24 @@ public class ActiveWorkoutActivity extends AppCompatActivity {
         screen.setBackgroundColor(0xFFFFFFFF);
         screen.setPadding(dp(20), dp(14), dp(20), dp(14));
 
-        // center: video or poster image
-        int h = (int) (getResources().getDisplayMetrics().heightPixels * 0.65f);
-        FrameLayout media = new FrameLayout(this);
-        if (hasVideo(cur)) {
-            ensurePlayer();
-            ImageView poster = new ImageView(this);
-            poster.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            poster.setBackground(Kit.rounded(this, 0xFFF6F6F6, 16));
-            ImageLoader.load(poster, cur.imagePath, 0xFFF6F6F6);
-            media.addView(poster, new FrameLayout.LayoutParams(-1, -1));
-            playerView = new PlayerView(this);
-            playerView.setUseController(false);
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-            playerView.setShutterBackgroundColor(0x00000000);
-            playerView.setPlayer(player);
-            playerView.setVisibility(videoReady ? View.VISIBLE : View.INVISIBLE);
-            media.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
-            if (!videoReady) {
-                ProgressBar pb = new ProgressBar(this);
-                pb.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(0xFFC6FF00));
-                media.addView(pb, new FrameLayout.LayoutParams(dp(36), dp(36), Gravity.CENTER));
-            }
-            if (!cur.videoUrl.equals(playerUrl)) {
-                playerUrl = cur.videoUrl;
-                preloadedUrl = cur.videoUrl;
-                player.setMediaItem(MediaItem.fromUri(cur.videoUrl));
-                player.prepare();
-            }
-        } else {
-            ImageView img = new ImageView(this);
-            img.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            img.setBackground(Kit.rounded(this, 0xFFF6F6F6, 16));
-            img.setClipToOutline(true);
-            img.setAdjustViewBounds(true);
-            ImageLoader.load(img, cur.imagePath, 0xFFF6F6F6);
-            media.addView(img, new FrameLayout.LayoutParams(-2, -1));
-            // gentle bounce, like Flutter's ScaleTransition(0.97..1.03)
-            android.animation.ValueAnimator a = android.animation.ValueAnimator.ofFloat(0.97f, 1.03f);
-            a.setDuration(900);
-            a.setRepeatMode(android.animation.ValueAnimator.REVERSE);
-            a.setRepeatCount(android.animation.ValueAnimator.INFINITE);
-            a.addUpdateListener(v -> { media.setScaleX((float) v.getAnimatedValue()); media.setScaleY((float) v.getAnimatedValue()); });
-            a.start();
+        // center: Exercise Motion View (Image 1 Start & Image 2 End)
+        int h = (int) (getResources().getDisplayMetrics().heightPixels * 0.85f);
+        int w = (int) (h * 1.5f);
+        int maxW = (int) (getResources().getDisplayMetrics().widthPixels * 0.58f);
+        if (w > maxW) {
+            w = maxW;
+            h = (int) (w / 1.5f);
         }
-        FrameLayout.LayoutParams mp = new FrameLayout.LayoutParams(-2, h, Gravity.CENTER);
-        if (hasVideo(cur)) media.setMinimumWidth((int) (h * 16f / 9f));
+
+        FrameLayout media = new FrameLayout(this);
+        media.setBackground(Kit.rounded(this, 0xFFF6F6F6, 16));
+        media.setClipToOutline(true);
+
+        ExerciseMotionView motionView = new ExerciseMotionView(this);
+        motionView.load(cur.imagePath, cur.getEndImagePath(), 0xFFF6F6F6);
+        media.addView(motionView, new FrameLayout.LayoutParams(-1, -1));
+
+        FrameLayout.LayoutParams mp = new FrameLayout.LayoutParams(w, h, Gravity.CENTER);
         screen.addView(media, mp);
 
         // top row
@@ -412,15 +384,29 @@ public class ActiveWorkoutActivity extends AppCompatActivity {
         tl.addView(Icons.view(this, Icons.INFO_OUTLINE_ROUNDED, 15, 0x73000000), Kit.lp(this, -2, -2, 4, 0, 0, 0));
         lc.addView(tl, Kit.lp(this, -2, -2, 0, 2, 0, 0));
         lc.addView(Kit.text(this, next.duration, 14, 700, INK));
-        FrameLayout imgHolder = new FrameLayout(this);
+        int screenH = getResources().getDisplayMetrics().heightPixels;
+        int screenW = getResources().getDisplayMetrics().widthPixels;
+        int maxImgH = screenH - dp(120);
+        int maxImgW = (int) (screenW * 0.55f);
+        int cardH = maxImgH;
+        int cardW = (int) (cardH * 1.5f);
+        if (cardW > maxImgW) {
+            cardW = maxImgW;
+            cardH = (int) (cardW / 1.5f);
+        }
+
+        FrameLayout imgCard = new FrameLayout(this);
+        imgCard.setBackground(Kit.rounded(this, 0xFF1C1C20, 16));
+        imgCard.setClipToOutline(true);
+
         ImageView img = new ImageView(this);
         img.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        img.setBackground(Kit.rounded(this, 0xFFF6F6F6, 16));
-        img.setClipToOutline(true);
-        ImageLoader.load(img, next.imagePath, 0xFFF6F6F6);
-        imgHolder.addView(img, new FrameLayout.LayoutParams(-2, -1, Gravity.CENTER));
-        img.setAdjustViewBounds(true);
-        lc.addView(imgHolder, new LinearLayout.LayoutParams(-1, 0, 1f));
+        ImageLoader.load(img, next.imagePath, 0xFF1C1C20);
+        imgCard.addView(img, new FrameLayout.LayoutParams(-1, -1, Gravity.CENTER));
+
+        LinearLayout.LayoutParams icp = new LinearLayout.LayoutParams(cardW, cardH);
+        icp.topMargin = dp(10);
+        lc.addView(imgCard, icp);
         left.addView(lc, new FrameLayout.LayoutParams(-1, -1));
         row.addView(left, new LinearLayout.LayoutParams(0, -1, 3f));
 

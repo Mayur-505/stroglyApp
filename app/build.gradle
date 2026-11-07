@@ -16,8 +16,8 @@ android {
         applicationId 'com.strongly.strongly'
         minSdk 26
         targetSdk 36
-        versionCode 12
-        versionName '2.0.3'
+        versionCode 15
+        versionName '2.0.6'
     }
 
     signingConfigs {

@@ -57,11 +57,13 @@ public final class PlanModels {
         public final int totalDays, strengthLevel, cardioLevel;
         public final List<Day> days;
 
+        public final boolean isPremium;
+
         Detail(String id, String title, String heroImage, int totalDays, String dailyDuration, int strength, int cardio,
-               String d1, String d2, List<Day> days) {
+               String d1, String d2, boolean isPremium, List<Day> days) {
             this.id = id; this.title = title; this.heroImage = heroImage; this.totalDays = totalDays;
             this.dailyDuration = dailyDuration; this.strengthLevel = strength; this.cardioLevel = cardio;
-            this.description1 = d1; this.description2 = d2; this.days = days;
+            this.description1 = d1; this.description2 = d2; this.isPremium = isPremium; this.days = days;
         }
 
         public static Detail fromJson(JsonObject o) {
@@ -72,18 +74,28 @@ public final class PlanModels {
             if (id == null) id = str(o, "_id", "");
             return new Detail(id, str(o, "title", "Workout Plan"), str(o, "heroImage", "assets/images/featured_workout.jpg"),
                     integer(o, "totalDays", 30), str(o, "dailyDuration", "8-15"), integer(o, "strengthLevel", 2),
-                    integer(o, "cardioLevel", 2), str(o, "descriptionParagraph1", ""), str(o, "descriptionParagraph2", ""), days);
+                    integer(o, "cardioLevel", 2), str(o, "descriptionParagraph1", ""), str(o, "descriptionParagraph2", ""),
+                    bool(o, "isPremium"), days);
         }
     }
 
     public static class Exercise implements java.io.Serializable {
-        public final String id, title, targetArea, imagePath, videoUrl, duration;
+        public final String id, title, targetArea, imagePath, imagePathEnd, videoUrl, duration;
         public final List<String> instructions, keyTips;
 
-        Exercise(String id, String title, String targetArea, String imagePath, String videoUrl, String duration,
+        Exercise(String id, String title, String targetArea, String imagePath, String imagePathEnd, String videoUrl, String duration,
                  List<String> instructions, List<String> keyTips) {
             this.id = id; this.title = title; this.targetArea = targetArea; this.imagePath = imagePath;
+            this.imagePathEnd = imagePathEnd;
             this.videoUrl = videoUrl; this.duration = duration; this.instructions = instructions; this.keyTips = keyTips;
+        }
+
+        public String getEndImagePath() {
+            if (imagePathEnd != null && !imagePathEnd.isEmpty()) return imagePathEnd;
+            if (imagePath != null && imagePath.contains("/0.jpg")) {
+                return imagePath.replace("/0.jpg", "/1.jpg");
+            }
+            return imagePath;
         }
 
         static List<String> strings(JsonObject o, String k) {
@@ -95,8 +107,13 @@ public final class PlanModels {
         public static Exercise fromJson(JsonObject o) {
             String id = str(o, "id", null);
             if (id == null) id = str(o, "_id", "");
+            String img = str(o, "imagePath", "assets/images/jumping_jacks.jpg");
+            String imgEnd = str(o, "imagePathEnd", null);
+            if ((imgEnd == null || imgEnd.isEmpty()) && img != null && img.contains("/0.jpg")) {
+                imgEnd = img.replace("/0.jpg", "/1.jpg");
+            }
             return new Exercise(id, str(o, "title", ""), str(o, "targetArea", ""),
-                    str(o, "imagePath", "assets/images/jumping_jacks.jpg"), str(o, "videoUrl", null),
+                    img, imgEnd, str(o, "videoUrl", null),
                     str(o, "duration", "00:30"), strings(o, "instructions"), strings(o, "keyTips"));
         }
     }

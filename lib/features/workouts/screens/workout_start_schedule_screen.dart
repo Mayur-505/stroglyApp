@@ -7,6 +7,7 @@ import '../../../core/services/language_service.dart';
 import '../models/workout_detail_models.dart';
 import '../widgets/workout_day_card.dart';
 import 'day_workout_exercises_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class WorkoutStartScheduleScreen extends StatefulWidget {
   final String? planId;
@@ -590,6 +591,7 @@ class _WorkoutStartScheduleScreenState
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'day_exercises'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),

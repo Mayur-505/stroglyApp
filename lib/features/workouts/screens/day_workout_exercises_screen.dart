@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/ads/ads_manager.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/widgets/app_image.dart';
 import '../models/exercise_detail_models.dart';
 import 'exercise_preview_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class DayWorkoutExercisesScreen extends StatefulWidget {
   final String? planId;
@@ -190,6 +192,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
                     );
                   } catch (_) {}
                   widget.onComplete?.call();
+                  AdsManager.instance.onWorkoutDayCompleted();
                   if (mounted) {
                     Navigator.of(context).pop();
                   }
@@ -258,6 +261,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
               );
             } catch (_) {}
             widget.onComplete?.call();
+            AdsManager.instance.onWorkoutDayCompleted();
             if (mounted) {
               Navigator.of(context).pop();
             }
@@ -281,6 +285,7 @@ class _DayWorkoutExercisesScreenState extends State<DayWorkoutExercisesScreen> {
     }
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'day_exercises'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: Stack(
         children: [

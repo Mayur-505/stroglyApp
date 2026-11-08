@@ -6,6 +6,7 @@ import '../../../core/constants/app_assets.dart';
 import '../widgets/gender_card.dart';
 import '../../questionnaire/screens/questionnaire_flow_screen.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class GenderSelectionScreen extends StatefulWidget {
   const GenderSelectionScreen({super.key});
@@ -49,6 +50,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
     final bottomOverlayHeight = size.height * 0.44;
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'questionnaire'),
       backgroundColor: AppColors.backgroundBlack,
       body: Stack(
         fit: StackFit.expand,

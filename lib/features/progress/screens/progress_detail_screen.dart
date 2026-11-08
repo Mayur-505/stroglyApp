@@ -7,6 +7,7 @@ import '../widgets/monthly_calendar_card.dart';
 import '../widgets/progress_summary_card.dart';
 import '../widgets/progress_tab_bar.dart';
 import '../widgets/workout_history_card.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class ProgressDetailScreen extends StatefulWidget {
   final ProgressTabType initialTab;
@@ -77,6 +78,7 @@ class _ProgressDetailScreenState extends State<ProgressDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'progress'),
       backgroundColor: const Color(0xFF0D0D0E),
       body: SafeArea(
         child: Column(

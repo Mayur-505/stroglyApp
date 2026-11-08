@@ -8,6 +8,7 @@ import '../widgets/steps_gauge_card.dart';
 import '../widgets/weekly_bar_chart_card.dart';
 import '../widgets/weekly_calendar_card.dart';
 import 'progress_detail_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class ProgressScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -242,6 +243,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 chartData: _calorieChart!,
                 onTap: () => _navigateToDetail(context, ProgressTabType.summary),
               ),
+            const AdPlacement(
+              screen: 'progress',
+              padding: EdgeInsets.only(top: 14),
+            ),
           ],
         ),
       ),

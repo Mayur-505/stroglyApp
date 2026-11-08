@@ -1,0 +1,508 @@
+{
+  "conditions": [],
+  "parameters": {},
+  "parameterGroups": {
+    "Other": {
+      "parameters": {
+        "Ads_status": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "Master switch: 0 = no ads anywhere, 1 = on"
+        },
+        "ios_ads_status": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "iOS release builds: 0 = no ads (no iOS AdMob ids yet) · 1 = on. Set the iOS ids in the arrays first"
+        },
+        "max_ad_content_rating": {
+          "defaultValue": { "value": "T" },
+          "valueType": "STRING",
+          "description": "Highest ad content rating: G · PG · T · MA (empty = no cap)"
+        },
+        "child_directed": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "1 = treat all requests as child-directed (COPPA) · keep 0 unless the audience is children"
+        },
+        "test_device_ids": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "Comma-separated AdMob device hashes that get test ads"
+        },
+        "developer_mode": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "1 = block devices with Developer options on (keep 0)"
+        },
+        "update_version_code": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "Latest build number (pubspec version +N); a lower installed build sees the update dialog"
+        },
+        "force_update": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "0 = update dialog can be skipped, 1 = forced"
+        },
+        "redirect_dialog": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 show the redirect dialog on splash"
+        },
+        "redirect_title": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "Redirect dialog title"
+        },
+        "redirect_message": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "Redirect dialog message"
+        },
+        "redirect_url": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "Redirect target link (empty = no dialog)"
+        },
+        "custom_close": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "After a custom page closes: 0 nothing · 1 app-open · 2 interstitial"
+        },
+        "custom_close_appopen_inter": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "0 = follow-up only after the last page · 1 = after every page"
+        },
+        "custom_page_count": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "Custom pages opened one after another per custom ad"
+        }
+      }
+    },
+    "Inter Ads": {
+      "parameters": {
+        "Inter_Ads_Status": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 on+preload · 2 on+load when shown"
+        },
+        "inter_mode": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 network · 2 custom · 3 network+custom alternate · 4 network, custom fills gaps"
+        },
+        "click_mode": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 forward · 2 back · 3 both"
+        },
+        "forward_click_gap": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "Forward cycle = gap + 1 clicks"
+        },
+        "backward_click_gap": {
+          "defaultValue": { "value": "3" },
+          "valueType": "NUMBER",
+          "description": "Back cycle = gap + 1 clicks"
+        },
+        "forward_timer": {
+          "defaultValue": { "value": "45" },
+          "valueType": "NUMBER",
+          "description": "Forward cooldown, seconds"
+        },
+        "backward_timer": {
+          "defaultValue": { "value": "30" },
+          "valueType": "NUMBER",
+          "description": "Back cooldown, seconds"
+        },
+        "inter_dialog": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 show the 'Loading Ad' dialog first"
+        },
+        "inter_workout_complete": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 show an interstitial when a workout day is completed (never during an active workout)"
+        },
+        "inter_array": {
+          "defaultValue": {
+            "value": "{\"inter_admob_id\": \"ca-app-pub-7817567654956813/7134312533\", \"inter_adx_id\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Interstitial ids"
+        },
+        "custom_array": {
+          "defaultValue": {
+            "value": "{\"custom_url1\": \"\", \"custom_url2\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Custom interstitial links"
+        }
+      }
+    },
+    "Native Ads": {
+      "parameters": {
+        "Native_Ads_Status": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 on+preload · 2 on+load when shown"
+        },
+        "native_mode": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 network · 2 custom · 3 network+custom alternate · 4 network, custom fills gaps"
+        },
+        "native_click": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "Native rotation gap (cycle = gap + 1)"
+        },
+        "native_type": {
+          "defaultValue": { "value": "medium" },
+          "valueType": "STRING",
+          "description": "Default native size: small · medium · big"
+        },
+        "native_bg_color": {
+          "defaultValue": { "value": "#1A1A1A" },
+          "valueType": "STRING",
+          "description": "Native background colour (app is dark theme)"
+        },
+        "native_button_color": {
+          "defaultValue": { "value": "#A3D223" },
+          "valueType": "STRING",
+          "description": "Native CTA button colour (app primary lime)"
+        },
+        "native_text_color": {
+          "defaultValue": { "value": "#FFFFFF" },
+          "valueType": "STRING",
+          "description": "Native headline/body text colour"
+        },
+        "native_button_text_color": {
+          "defaultValue": { "value": "#000000" },
+          "valueType": "STRING",
+          "description": "Native CTA button text colour"
+        },
+        "native_fallback": {
+          "defaultValue": { "value": "admob" },
+          "valueType": "STRING",
+          "description": "When native comes back empty: off · admob · adx · custom"
+        },
+        "native_fallback_id": {
+          "defaultValue": { "value": "ca-app-pub-7817567654956813/3195067528" },
+          "valueType": "STRING",
+          "description": "Second native unit id"
+        },
+        "full_native_mode": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 full-screen native"
+        },
+        "full_native_ID": {
+          "defaultValue": { "value": "ca-app-pub-7817567654956813/3195067528" },
+          "valueType": "STRING",
+          "description": "Full-screen native unit id"
+        },
+        "full_native_close_delay": {
+          "defaultValue": { "value": "5" },
+          "valueType": "NUMBER",
+          "description": "Seconds before the full native can be closed"
+        },
+        "native_array": {
+          "defaultValue": {
+            "value": "{\"native_admob_id\": \"ca-app-pub-7817567654956813/3195067528\", \"native_adx_id\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Native ids"
+        },
+        "native_custom_array": {
+          "defaultValue": {
+            "value": "{\"custom_url1\": \"\", \"custom_url2\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Custom native links"
+        }
+      }
+    },
+    "Banner Ads": {
+      "parameters": {
+        "Banner_Ads_Status": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 on+preload · 2 on+load when shown"
+        },
+        "banner_mode": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 network · 2 custom · 3 network+custom alternate · 4 network, custom fills gaps"
+        },
+        "banner_click": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "Banner rotation gap (cycle = gap + 1)"
+        },
+        "banner_type": {
+          "defaultValue": { "value": "small" },
+          "valueType": "STRING",
+          "description": "Default banner size: small · medium · big"
+        },
+        "banner_array": {
+          "defaultValue": {
+            "value": "{\"banner_admob_id\": \"ca-app-pub-7817567654956813/7979745487\", \"banner_adx_id\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Banner ids"
+        },
+        "banner_custom_array": {
+          "defaultValue": {
+            "value": "{\"small_banner\": \"\", \"medium_banner\": \"\", \"big_banner\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Custom banner images per size"
+        }
+      }
+    },
+    "App Open": {
+      "parameters": {
+        "appopen_mode": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "Splash: 0 off · 1 app-open · 2 interstitial"
+        },
+        "appopen_resume": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "Resume from background: 0 off · 1 app-open (skipped during an active workout)"
+        },
+        "timer_app_open": {
+          "defaultValue": { "value": "0" },
+          "valueType": "NUMBER",
+          "description": "Max app-open ads per day, spread evenly (0 = no cap)"
+        },
+        "app_open_id_array": {
+          "defaultValue": {
+            "value": "{\"app_open_admob_id\": \"ca-app-pub-7817567654956813/7270043904\", \"app_open_adx_id\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "App-open ids"
+        },
+        "app_open_custom_array": {
+          "defaultValue": {
+            "value": "{\"custom_url1\": \"\", \"custom_url2\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Custom app-open links"
+        }
+      }
+    },
+    "Rewarded ADS": {
+      "parameters": {
+        "reward_mode": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "0 off · 1 on (used by the workout unlock sheet)"
+        },
+        "reward_array": {
+          "defaultValue": {
+            "value": "{\"reward_admob_id\": \"ca-app-pub-7817567654956813/5821230869\", \"reward_adx_id\": \"\"}"
+          },
+          "valueType": "JSON",
+          "description": "Rewarded ids"
+        }
+      }
+    },
+    "Fail Ads": {
+      "parameters": {
+        "fail_array_list": {
+          "defaultValue": {
+            "value": "{\"native\": [{\"admob\": \"ca-app-pub-7817567654956813/3195067528\"}], \"banner\": [{\"admob\": \"ca-app-pub-7817567654956813/7979745487\"}], \"inter\": [{\"admob\": \"ca-app-pub-7817567654956813/7134312533\"}], \"appopen\": [{\"admob\": \"ca-app-pub-7817567654956813/7270043904\"}], \"reward\": [{\"admob\": \"ca-app-pub-7817567654956813/5821230869\"}]}"
+          },
+          "valueType": "JSON",
+          "description": "Backup ids tried after the main ones"
+        }
+      }
+    },
+    "custom_image": {
+      "parameters": {
+        "custom_image_view_list": {
+          "defaultValue": {
+            "value": "{\"Small_Native\": [], \"medium_Native\": [], \"big_Native\": []}"
+          },
+          "valueType": "JSON",
+          "description": "Custom native images per size"
+        }
+      }
+    },
+    "LanguageScreen": {
+      "parameters": {
+        "language_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "language screen: 0 off · 1 native · 2 banner"
+        },
+        "language_size": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "language screen: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "OnboardingScreen": {
+      "parameters": {
+        "onboarding_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "onboarding screen bottom: 0 off · 1 native · 2 banner"
+        },
+        "onboarding_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "onboarding screen bottom: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "QuestionnaireScreen": {
+      "parameters": {
+        "questionnaire_type": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "gender + questionnaire screens bottom: 0 off · 1 native · 2 banner"
+        },
+        "questionnaire_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "gender + questionnaire screens bottom: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "HomeScreen": {
+      "parameters": {
+        "home_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "home feed (between sections): 0 off · 1 native · 2 banner"
+        },
+        "home_size": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "home feed (between sections): 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "WorkoutsScreen": {
+      "parameters": {
+        "workouts_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "workouts explore tab: 0 off · 1 native · 2 banner"
+        },
+        "workouts_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "workouts explore tab: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "CategoryWorkoutsScreen": {
+      "parameters": {
+        "category_type": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "category workout list: 0 off · 1 native · 2 banner"
+        },
+        "category_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "category workout list: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "WorkoutSearchScreen": {
+      "parameters": {
+        "search_type": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "workout search: 0 off · 1 native · 2 banner"
+        },
+        "search_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "workout search: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "WorkoutPlanScreen": {
+      "parameters": {
+        "plan_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "workout plan detail (day list): 0 off · 1 native · 2 banner"
+        },
+        "plan_size": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "workout plan detail (day list): 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "DayExercisesScreen": {
+      "parameters": {
+        "day_exercises_type": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "day exercise list / start-schedule screen: 0 off · 1 native · 2 banner"
+        },
+        "day_exercises_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "day exercise list / start-schedule screen: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "ExercisePreviewScreen": {
+      "parameters": {
+        "exercise_preview_type": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "exercise preview (under the video): 0 off · 1 native · 2 banner"
+        },
+        "exercise_preview_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "exercise preview (under the video): 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "ProgressScreen": {
+      "parameters": {
+        "progress_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "progress tab + progress detail: 0 off · 1 native · 2 banner"
+        },
+        "progress_size": {
+          "defaultValue": { "value": "2" },
+          "valueType": "NUMBER",
+          "description": "progress tab + progress detail: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    },
+    "ProfileScreen": {
+      "parameters": {
+        "profile_type": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "profile tab: 0 off · 1 native · 2 banner"
+        },
+        "profile_size": {
+          "defaultValue": { "value": "1" },
+          "valueType": "NUMBER",
+          "description": "profile tab: 0 off · 1 small · 2 medium · 3 big"
+        }
+      }
+    }
+  }
+}

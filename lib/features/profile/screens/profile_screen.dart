@@ -7,6 +7,8 @@ import '../../../core/services/language_service.dart';
 import '../widgets/profile_settings_card.dart';
 // import 'go_premium_screen.dart';
 import '../../language/screens/language_selection_screen.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
+import '../../../core/ads/ads_manager.dart';
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback? onBack;
@@ -219,6 +221,22 @@ class ProfileScreen extends StatelessWidget {
                 ),
               );
             },
+          ),
+          if (AdsManager.instance.consent.privacyOptionsRequired)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: TextButton.icon(
+                onPressed: AdsManager.instance.consent.showPrivacyOptions,
+                icon: const Icon(Icons.privacy_tip_outlined, color: Colors.white54, size: 18),
+                label: Text(
+                  'Ad privacy settings',
+                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
+                ),
+              ),
+            ),
+          const AdPlacement(
+            screen: 'profile',
+            padding: EdgeInsets.only(top: 16),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/ads/widgets/ad_placement.dart';
 
 class QuestionnaireLayout extends StatelessWidget {
   final String title;
@@ -27,6 +28,7 @@ class QuestionnaireLayout extends StatelessWidget {
     final topColorHeight = (size.height * 0.35).clamp(310.0, 350.0);
 
     return Scaffold(
+      bottomNavigationBar: const BottomAdPlacement(screen: 'questionnaire'),
       backgroundColor: AppColors.backgroundBlack,
       body: Stack(
         fit: StackFit.expand,
